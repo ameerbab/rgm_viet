@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include rgm_vn *.css
+recursive-include rgm_vn *.csv
+recursive-include rgm_vn *.html
+recursive-include rgm_vn *.ico
+recursive-include rgm_vn *.js
+recursive-include rgm_vn *.json
+recursive-include rgm_vn *.md
+recursive-include rgm_vn *.png
+recursive-include rgm_vn *.py
+recursive-include rgm_vn *.svg
+recursive-include rgm_vn *.txt
+recursive-exclude rgm_vn *.pyc

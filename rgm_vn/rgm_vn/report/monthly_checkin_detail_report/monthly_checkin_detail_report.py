@@ -124,8 +124,15 @@ def get_result_as_list(data):
 				if key_data[key].get("morning") and key_data[key].get("evening"):
 					if time_diff_in_hours(key_data[key].get("total_hours"), time_one_day) > 0:
 						key_data[key]["ot_hours"] = time_diff(key_data[key].get("total_hours"), time_one_day)
+				
+				key_data[key]["total_hours_float"] = 0
+
+				if key_data[key].get("total_hours") != 0:
+					key_data[key]["total_hours_float"] = key_data[key].get("total_hours").seconds/(60*60)
 
 				row = []
+
+				frappe.errprint(key_data[key].get("total_hours"))
 
 				row.append(key_data[key]["employee"])
 				row.append(key_data[key]["employee_name"])
@@ -141,7 +148,7 @@ def get_result_as_list(data):
 				row.append(key_data[key].get("lunch") or "")
 				row.append(key_data[key].get("evening") or "")
 
-				row.append(key_data[key].get("total_hours") or "")
+				row.append(key_data[key].get("total_hours_float") or "")
 				row.append(key_data[key].get("full_duty") or "")
 				row.append(key_data[key].get("ot_hours") or "")
 
@@ -156,9 +163,9 @@ def get_columns():
 	columns = []
 	return [
 		"Id:Link/Employee:100", "Name:Data:150", "Department:Data:150", "Date:Date:80",
-		"Duty In:Data:70", "Lunch Out:Data:70", "Lunch In:Data:70", "Duty Out:Data:70",
-		"Morning:Data:70", "Lunch:Data:70", "Evening:Data:70",
-		"Total Hours:Data:70", "Full Duty:Float:70", "OT Hours:Data:70",
+		"Duty In:Time:70", "Lunch Out:Time:70", "Lunch In:Time:70", "Duty Out:Time:70",
+		"Morning:Time:70", "Lunch:Time:70", "Evening:Time:70",
+		"Total Hours:Float:70", "Full Duty:Float:70", "OT Hours:Time:70",
 		"All Checkin:Data:230", "Error:Data:80",
 	]
 	return columns

@@ -16,11 +16,11 @@ def execute(filters=None):
 	columns = get_columns()
 
 	data = get_checkins(conditions, filters)
-	data = get_result_as_list(data)
+	data = get_result_as_list(data, filters)
 
 	return columns, data
 
-def get_result_as_list(data):
+def get_result_as_list(data, filters):
 
 	result = []
 
@@ -43,6 +43,9 @@ def get_result_as_list(data):
 	time_duty_out_to = to_timedelta("19:00:00")
 
 	time_one_day = to_timedelta("08:45:00")
+
+	time_late_in = to_timedelta("07:40:00")
+	time_early_out = to_timedelta("16:59:59")
 
 	for d in data:
 		key = (d.employee, d.c_date)
@@ -90,12 +93,12 @@ def get_result_as_list(data):
 				
 				error = ""
 
-				if c_date.strftime("%a") == "Sat":
-					if not (key_data[key].get("duty_in") and key_data[key].get("lunch_out")):
-						error = "@"
-				else:
-					if not (key_data[key].get("duty_in") and key_data[key].get("lunch_out") and key_data[key].get("lunch_in") and key_data[key].get("duty_out")):
-						error = "@"
+				# if c_date.strftime("%a") == "Sat":
+				# 	if not (key_data[key].get("duty_in") and key_data[key].get("lunch_out")):
+				# 		error = "@"
+				# else:
+				# 	if not (key_data[key].get("duty_in") and key_data[key].get("lunch_out") and key_data[key].get("lunch_in") and key_data[key].get("duty_out")):
+				# 		error = "@"
 				
 				key_data[key]["morning"] = 0
 				key_data[key]["lunch"] = 0
@@ -104,69 +107,202 @@ def get_result_as_list(data):
 				key_data[key]["full_duty"] = 0
 				key_data[key]["ot_hours"] = 0
 
-				if key_data[key].get("lunch_out") and key_data[key].get("duty_in"):
-					key_data[key]["morning"] = time_diff(key_data[key].get("lunch_out"), key_data[key].get("duty_in"))
+				key_data[key]["late_in"] = ""
+				key_data[key]["early_out"] = ""
 
-				if key_data[key].get("lunch_in") and key_data[key].get("lunch_out"):
-					key_data[key]["lunch"] = time_diff(key_data[key].get("lunch_in"), key_data[key].get("lunch_out"))
-
-				if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):	
-					key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))
+				if key_data[key].get("duty_in") and key_data[key].get("duty_in") > time_late_in:
+					key_data[key]["late_in"] = "Late In"
 				
-				if key_data[key].get("morning") and key_data[key].get("evening"):
-					key_data[key]["total_hours"] = key_data[key].get("morning") + key_data[key].get("evening")
+				if key_data[key].get("duty_out") and key_data[key].get("duty_out") < time_early_out:
+					key_data[key]["early_out"] = "Early Out"
 
-				if key_data[key].get("morning") and key_data[key].get("evening"):
-					key_data[key]["full_duty"] = 1
-				elif key_data[key].get("morning") or key_data[key].get("evening"):
-					key_data[key]["full_duty"] = 0.5
 				
-				if key_data[key].get("morning") and key_data[key].get("evening"):
-					if time_diff_in_hours(key_data[key].get("total_hours"), time_one_day) > 0:
-						key_data[key]["ot_hours"] = time_diff(key_data[key].get("total_hours"), time_one_day)
-				
-				key_data[key]["total_hours_float"] = 0
+				row_show = True;
 
-				if key_data[key].get("total_hours") != 0:
-					key_data[key]["total_hours_float"] = key_data[key].get("total_hours").seconds/(60*60)
+				if filters.get("grace_period"):
+					if filters.get("grace_period") == "Late or Early":
+						if key_data[key]["late_in"] or key_data[key]["early_out"]:
+							row_show = True;
+						else:
+							row_show = False;
+					elif (filters.get("grace_period") == key_data[key]["late_in"] or filters.get("grace_period") ==  key_data[key]["early_out"]):
+						row_show = True;
+					else:
+						row_show = False;
+					
+				if row_show == True:
+					if key_data[key].get("lunch_out") and key_data[key].get("duty_in"):
+						key_data[key]["morning"] = time_diff(key_data[key].get("lunch_out"), key_data[key].get("duty_in"))
 
-				row = []
+					if key_data[key].get("lunch_in") and key_data[key].get("lunch_out"):
+						key_data[key]["lunch"] = time_diff(key_data[key].get("lunch_in"), key_data[key].get("lunch_out"))
 
-				frappe.errprint(key_data[key].get("total_hours"))
+					if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):	
+						key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))
 
-				row.append(key_data[key]["employee"])
-				row.append(key_data[key]["employee_name"])
-				row.append(key_data[key]["department"])
-				row.append(key_data[key]["c_date"])
-				
-				row.append(key_data[key].get("duty_in") or "")
-				row.append(key_data[key].get("lunch_out") or "")
-				row.append(key_data[key].get("lunch_in") or "")
-				row.append(key_data[key].get("duty_out") or "")
+					if key_data[key].get("duty_in") and not key_data[key].get("lunch_out"):
+						error = "@"
+					if key_data[key].get("lunch_in") and not key_data[key].get("duty_out"):
+						error = "@"
+					
+					if key_data[key].get("morning") and key_data[key].get("evening"):
+						key_data[key]["total_hours"] = key_data[key].get("morning") + key_data[key].get("evening")
 
-				row.append(key_data[key].get("morning") or "")
-				row.append(key_data[key].get("lunch") or "")
-				row.append(key_data[key].get("evening") or "")
+					if key_data[key].get("morning") and key_data[key].get("evening"):
+						key_data[key]["full_duty"] = 1
+					elif key_data[key].get("morning") or key_data[key].get("evening"):
+						key_data[key]["full_duty"] = 0.5
+					
+					if key_data[key].get("morning") and key_data[key].get("evening"):
+						if time_diff_in_hours(key_data[key].get("total_hours"), time_one_day) > 0:
+							key_data[key]["ot_hours"] = time_diff(key_data[key].get("total_hours"), time_one_day)
+					
+					key_data[key]["total_hours_float"] = 0
 
-				row.append(key_data[key].get("total_hours_float") or "")
-				row.append(key_data[key].get("full_duty") or "")
-				row.append(key_data[key].get("ot_hours") or "")
+					if key_data[key].get("total_hours") != 0:
+						key_data[key]["total_hours_float"] = key_data[key].get("total_hours").seconds/(60*60)
 
-				row.append(" || ".join(key_data[key]["all_checkin"]))
-				row.append(error)
+					row = []
 
-				result.append(row)
+					row.append(key_data[key]["employee"])
+					row.append(key_data[key]["employee_name"])
+					row.append(key_data[key]["department"])
+					row.append(key_data[key]["c_date"])
+					
+					row.append(key_data[key].get("duty_in") or "")
+					row.append(key_data[key].get("lunch_out") or "")
+					row.append(key_data[key].get("lunch_in") or "")
+					row.append(key_data[key].get("duty_out") or "")
+
+					row.append(key_data[key].get("morning") or "")
+					row.append(key_data[key].get("lunch") or "")
+					row.append(key_data[key].get("evening") or "")
+
+					row.append(key_data[key].get("total_hours_float") or "")
+					row.append(key_data[key].get("full_duty") or "")
+					row.append(key_data[key].get("ot_hours") or "")
+
+					row.append(key_data[key].get("late_in") or "")
+					row.append(key_data[key].get("early_out") or "")
+
+					row.append(" || ".join(key_data[key]["all_checkin"]))
+					row.append(error)				
+
+					result.append(row)
 
 	return result
 
 def get_columns():
-	columns = []
 	return [
-		"Id:Link/Employee:100", "Name:Data:150", "Department:Data:150", "Date:Date:80",
-		"Duty In:Time:70", "Lunch Out:Time:70", "Lunch In:Time:70", "Duty Out:Time:70",
-		"Morning:Time:70", "Lunch:Time:70", "Evening:Time:70",
-		"Total Hours:Float:70", "Full Duty:Float:70", "OT Hours:Time:70",
-		"All Checkin:Data:230", "Error:Data:80",
+		{
+			"fieldname": "employee",
+			"label": _("Id"),
+			"fieldtype": "Link",
+			"options": "Employee",
+			"width": 100
+		},
+		{
+			"fieldname": "employee_name",
+			"label": _("Name"),
+			"fieldtype": "Data",
+			"width": 150
+		},
+		{
+			"fieldname": "department",
+			"label": _("Department"),
+			"fieldtype": "Data",
+			"width": 150
+		},
+		{
+			"fieldname": "c_date",
+			"label": _("Date"),
+			"fieldtype": "Date",
+			"width": 80
+		},
+		{
+			"fieldname": "duty_in",
+			"label": _("Duty In"),
+			"fieldtype": "Time",
+			"width": 80
+		},
+		{
+			"fieldname": "lunch_out",
+			"label": _("Lunch Out"),
+			"fieldtype": "Time",
+			"width": 80
+		},
+		{
+			"fieldname": "lunch_in",
+			"label": _("Lunch In"),
+			"fieldtype": "Time",
+			"width": 80
+		},
+		{
+			"fieldname": "duty_out",
+			"label": _("Duty Out"),
+			"fieldtype": "Time",
+			"width": 80
+		},
+		{
+			"fieldname": "morning",
+			"label": _("Morning"),
+			"fieldtype": "Time",
+			"width": 80
+		},
+		{
+			"fieldname": "lunch",
+			"label": _("Lunch"),
+			"fieldtype": "Time",
+			"width": 80
+		},
+		{
+			"fieldname": "evening",
+			"label": _("Evening"),
+			"fieldtype": "Time",
+			"width": 80
+		},
+		{
+			"fieldname": "total_hours",
+			"label": _("Total Hours"),
+			"fieldtype": "Float",
+			"width": 80
+		},
+		{
+			"fieldname": "full_duty",
+			"label": _("Full Duty"),
+			"fieldtype": "Float",
+			"width": 80
+		},
+		{
+			"fieldname": "ot_hours",
+			"label": _("OT Hours"),
+			"fieldtype": "Time",
+			"width": 80
+		},
+		{
+			"fieldname": "late_in",
+			"label": _("Late In"),
+			"fieldtype": "Data",
+			"width": 80
+		},
+		{
+			"fieldname": "early_out",
+			"label": _("Early Out"),
+			"fieldtype": "Data",
+			"width": 80
+		},
+		{
+			"fieldname": "all_checkin",
+			"label": _("All Checkin"),
+			"fieldtype": "Data",
+			"width": 230
+		},
+		{
+			"fieldname": "error",
+			"label": _("Error"),
+			"fieldtype": "Data",
+			"width": 80
+		}
 	]
 	return columns
 

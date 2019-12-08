@@ -41,28 +41,39 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 		}
 	],
 	"formatter": function(value, row, column, data, default_formatter) {
-		
-		if(column.fieldname=="late_in") {
-			console.log(data.late_in);
-			value = data.late_in;
-		}
-
+		// if (data[column.fieldname+"_name"]=="--------"){
+		// 	var data_checkin = {
+		// 		employee: data.employee,
+		// 		// time: data.c_date,
+		// 		// time_only: "08:00:30",
+		// 	}
+		// 	column.link_onclick =
+		// 			"frappe.query_reports['Monthly Checkin Detail Report'].open_checkin(" + JSON.stringify(data_checkin) + ")";
+		// }	
 		value = default_formatter(value, row, column, data);
 
-		if((column.fieldname=="duty_in" && data.late_in=="Late In") || (column.fieldname=="duty_out" && data.early_out=="Early Out")) {
-			value = $(`<span>${value}</span>`);
-			var $value = $(value).css("color", "red");
-			value = $value.wrap("<p></p>").parent().html();
+		if(column.fieldname == "duty_in" || column.fieldname == "lunch_out" || column.fieldname == "lunch_in" || column.fieldname == "duty_out"){
+			if (data[column.fieldname+"_name"]!="--------"){
+				value = $(`<span>${value}</span>`);
+				var link = "#"
+				if(data[column.fieldname+"_name"] != ""){
+					link = "#Form/Employee Checkin/" + data[column.fieldname+"_name"];
+				}
+				var $value = $(value).find("a").attr("href", link);
+
+				if((column.fieldname=="duty_in" && data.late_in=="Late In") || (column.fieldname=="duty_out" && data.early_out=="Early Out")) {
+					$value.css("color", "red");
+				}
+				value = $value.wrap("<p></p>").parent().html();
+			}	
 		}
-
-		// if(column.fieldname=="duty_in") {
-		// 	column.link_onclick =
-		// 			"frappe.query_reports['Monthly Checkin Detail Report'].open_checkin(" + JSON.stringify(data) + ")";
-		// }
-
 		return value;
 	},
 	"open_checkin": function(data) {
-		alert(1);
+		frappe.new_doc('Employee Checkin', {
+			employee: data.employee,
+			// time: data.time,
+			// time_only: data.time_only,
+		});
 	}
 };

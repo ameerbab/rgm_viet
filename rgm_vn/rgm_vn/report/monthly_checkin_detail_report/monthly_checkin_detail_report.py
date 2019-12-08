@@ -65,6 +65,10 @@ def get_result_as_list(data, filters):
 			key_data[key]["employee_number"] = d.employee_number
 			key_data[key]["c_date"] = d.c_date
 			key_data[key]["c_time"] = d.c_time
+			key_data[key]["duty_in_name"] = "--------"
+			key_data[key]["lunch_out_name"] = "--------"
+			key_data[key]["lunch_in_name"] = "--------"
+			key_data[key]["duty_out_name"] = "--------"
 		
 		c_time = to_timedelta(d.c_time)
 
@@ -74,15 +78,19 @@ def get_result_as_list(data, filters):
 		key_data[key]["all_checkin"].append(cstr(d.c_time))
 		
 		if c_time > time_duty_in_from and c_time < time_duty_in_to and not key_data[key].get("duty_in"):
+			key_data[key]["duty_in_name"] = d.c_name
 			key_data[key]["duty_in"] = d.c_time
 		
 		if c_time > time_lunch_out_from and c_time < time_lunch_out_to and not key_data[key].get("lunch_out"):
+			key_data[key]["lunch_out_name"] = d.c_name
 			key_data[key]["lunch_out"] = d.c_time
 		
 		if c_time > time_lunch_in_from and c_time < time_lunch_in_to and not key_data[key].get("lunch_in"):
+			key_data[key]["lunch_in_name"] = d.c_name
 			key_data[key]["lunch_in"] = d.c_time
 		
 		if c_time > time_duty_out_from and c_time < time_duty_out_to and not key_data[key].get("duty_out"):
+			key_data[key]["duty_out_name"] = d.c_name
 			key_data[key]["duty_out"] = d.c_time
 
 	for employee in employees:
@@ -141,9 +149,9 @@ def get_result_as_list(data, filters):
 						key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))
 
 					if key_data[key].get("duty_in") and not key_data[key].get("lunch_out"):
-						error = "@"
+						key_data[key]["error"] = "@"
 					if key_data[key].get("lunch_in") and not key_data[key].get("duty_out"):
-						error = "@"
+						key_data[key]["error"] = "@"
 					
 					if key_data[key].get("morning") and key_data[key].get("evening"):
 						key_data[key]["total_hours"] = key_data[key].get("morning") + key_data[key].get("evening")
@@ -162,31 +170,18 @@ def get_result_as_list(data, filters):
 					if key_data[key].get("total_hours") != 0:
 						key_data[key]["total_hours_float"] = key_data[key].get("total_hours").seconds/(60*60)
 
-					row = []
+					key_data[key]["all_checkin"] = " || ".join(key_data[key]["all_checkin"])
+					key_data[key]["morning"] = key_data[key].get("morning") or ""
+					key_data[key]["lunch"] = key_data[key].get("lunch") or ""
+					key_data[key]["evening"] = key_data[key].get("evening") or ""
 
-					row.append(key_data[key]["employee"])
-					row.append(key_data[key]["employee_name"])
-					row.append(key_data[key]["department"])
-					row.append(key_data[key]["c_date"])
-					
-					row.append(key_data[key].get("duty_in") or "")
-					row.append(key_data[key].get("lunch_out") or "")
-					row.append(key_data[key].get("lunch_in") or "")
-					row.append(key_data[key].get("duty_out") or "")
+					key_data[key]["total_hours_float"] = key_data[key].get("total_hours_float") if (key_data[key].get("total_hours_float") > 0) else ""
+					key_data[key]["full_duty"] = key_data[key].get("full_duty") or ""
+					key_data[key]["ot_hours"] = key_data[key].get("ot_hours") or ""
 
-					row.append(key_data[key].get("morning") or "")
-					row.append(key_data[key].get("lunch") or "")
-					row.append(key_data[key].get("evening") or "")
+					# key_data[key]["lunch_out"] = key_data[key].get("lunch_out") or "--------"
 
-					row.append(key_data[key].get("total_hours_float") or "")
-					row.append(key_data[key].get("full_duty") or "")
-					row.append(key_data[key].get("ot_hours") or "")
-
-					row.append(key_data[key].get("late_in") or "")
-					row.append(key_data[key].get("early_out") or "")
-
-					row.append(" || ".join(key_data[key]["all_checkin"]))
-					row.append(error)				
+					row = key_data[key]
 
 					result.append(row)
 
@@ -222,25 +217,29 @@ def get_columns():
 		{
 			"fieldname": "duty_in",
 			"label": _("Duty In"),
-			"fieldtype": "Time",
+			"fieldtype": "Link",
+			"options": "Employee Checkin",
 			"width": 80
 		},
 		{
 			"fieldname": "lunch_out",
 			"label": _("Lunch Out"),
-			"fieldtype": "Time",
+			"fieldtype": "Link",
+			"options": "Employee Checkin",
 			"width": 80
 		},
 		{
 			"fieldname": "lunch_in",
 			"label": _("Lunch In"),
-			"fieldtype": "Time",
+			"fieldtype": "Link",
+			"options": "Employee Checkin",
 			"width": 80
 		},
 		{
 			"fieldname": "duty_out",
 			"label": _("Duty Out"),
-			"fieldtype": "Time",
+			"fieldtype": "Link",
+			"options": "Employee Checkin",
 			"width": 80
 		},
 		{
@@ -262,7 +261,7 @@ def get_columns():
 			"width": 80
 		},
 		{
-			"fieldname": "total_hours",
+			"fieldname": "total_hours_float",
 			"label": _("Total Hours"),
 			"fieldtype": "Float",
 			"width": 80
@@ -308,7 +307,7 @@ def get_columns():
 
 def get_checkins(conditions, filters):
 
-	query = """Select c.employee as employee, e.employee_name, e.department,
+	query = """Select c.name as c_name, c.employee as employee, e.employee_name, e.department,
 	c.log_type,	date(c.time) as c_date, time(c.time) as c_time
 	FROM `tabEmployee Checkin` c
 	LEFT JOIN `tabEmployee` e ON  e.name = c.employee

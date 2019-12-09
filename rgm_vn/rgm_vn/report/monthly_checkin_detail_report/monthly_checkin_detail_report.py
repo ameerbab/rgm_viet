@@ -179,7 +179,10 @@ def get_result_as_list(data, filters):
 					key_data[key]["full_duty"] = key_data[key].get("full_duty") or ""
 					key_data[key]["ot_hours"] = key_data[key].get("ot_hours") or ""
 
-					# key_data[key]["lunch_out"] = key_data[key].get("lunch_out") or "--------"
+					key_data[key]["duty_in"] = key_data[key].get("duty_in") or "--------"
+					key_data[key]["lunch_out"] = key_data[key].get("lunch_out") or "--------"
+					key_data[key]["lunch_in"] = key_data[key].get("lunch_in") or "--------"
+					key_data[key]["duty_out"] = key_data[key].get("duty_out") or "--------"
 
 					row = key_data[key]
 

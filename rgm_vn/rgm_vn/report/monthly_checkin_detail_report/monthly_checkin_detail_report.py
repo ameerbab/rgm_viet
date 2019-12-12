@@ -7,7 +7,6 @@ from frappe.utils import flt
 from frappe import msgprint, _
 from frappe.utils import get_first_day, get_last_day, add_to_date, nowdate, getdate, add_days, add_months, formatdate, to_timedelta, cstr, time_diff, time_diff_in_hours
 import math
-from datetime import timedelta
 
 def execute(filters=None):
 	if not filters: filters = {}
@@ -30,10 +29,10 @@ def get_result_as_list(data, filters):
 	employees = []
 	dates = []
 
-	time_duty_in_from = to_timedelta("07:20:00")
-	time_duty_in_to = to_timedelta("11:40:00")
+	time_duty_in_from = to_timedelta("07:15:00")
+	time_duty_in_to = to_timedelta("11:45:00")
 	
-	time_lunch_out_from = to_timedelta("11:40:01")
+	time_lunch_out_from = to_timedelta("11:45:01")
 	time_lunch_out_to = to_timedelta("12:00:00")
 
 	time_lunch_in_from = to_timedelta("12:00:01")
@@ -44,7 +43,7 @@ def get_result_as_list(data, filters):
 
 	time_one_day = to_timedelta("08:45:00")
 
-	time_late_in = to_timedelta("07:40:00")
+	time_late_in = to_timedelta("07:45:00")
 	time_early_out = to_timedelta("16:59:59")
 
 	for d in data:

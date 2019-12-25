@@ -67,6 +67,25 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 				value = $value.wrap("<p></p>").parent().html();
 			}	
 		}
+		if (data["c_day"]=="Sat"){
+			value = $(`<span>${value}</span>`);
+			console.log();
+			if(value.find("a")[0]!=undefined){
+				value.find("a").css("color", "blue");
+			}else{
+				value.css("color", "blue");
+			}			
+			value = value.wrap("<p></p>").parent().html();
+		}else if (data["c_day"]=="Sun"){
+			value = $(`<span>${value}</span>`);
+			console.log();
+			if(value.find("a")[0]!=undefined){
+				value.find("a").css("color", "red");
+			}else{
+				value.css("color", "red");
+			}			
+			value = value.wrap("<p></p>").parent().html();
+		}
 		return value;
 	},
 	"open_checkin": function(data) {

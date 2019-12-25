@@ -118,6 +118,8 @@ def get_result_as_list(data, filters):
 				# else:
 				# 	if not (key_data[key].get("duty_in") and key_data[key].get("lunch_out") and key_data[key].get("lunch_in") and key_data[key].get("duty_out")):
 				# 		error = "@"
+
+				key_data[key]["c_day"] =  c_date.strftime("%a")
 				
 				key_data[key]["morning"] = 0
 				key_data[key]["lunch"] = 0
@@ -179,7 +181,7 @@ def get_result_as_list(data, filters):
 
 						key_data[key]["morning_to"] = key_data[key]["lunch_out"]
 
-						key_data[key]["morning"] = time_diff(key_data[key].get("morning_from"), key_data[key].get("morning_to"))
+						key_data[key]["morning"] = time_diff(key_data[key].get("morning_to"), key_data[key].get("morning_from"))
 
 					if key_data[key].get("lunch_in") and key_data[key].get("lunch_out"):
 						key_data[key]["lunch"] = time_diff(key_data[key].get("lunch_in"), key_data[key].get("lunch_out"))
@@ -277,11 +279,17 @@ def get_columns():
 			"width": 100
 		},
 		{
+			"fieldname": "c_day",
+			"label": _("Day"),
+			"fieldtype": "Data",
+			"width": 40
+		},
+		{
 			"fieldname": "c_date",
 			"label": _("Date"),
 			"fieldtype": "Date",
 			"width": 80
-		},
+		},		
 		{
 			"fieldname": "duty_in",
 			"label": _("Duty In"),

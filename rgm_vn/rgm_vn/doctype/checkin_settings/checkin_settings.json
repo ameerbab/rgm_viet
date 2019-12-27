@@ -72,7 +72,6 @@
   {
    "fieldname": "lunch_in_round",
    "fieldtype": "Time",
-   "hidden": 1,
    "label": "Check In Round"
   },
   {
@@ -105,7 +104,6 @@
   {
    "fieldname": "lunch_out_round",
    "fieldtype": "Time",
-   "hidden": 1,
    "label": "Check In Round"
   },
   {
@@ -143,7 +141,6 @@
   {
    "fieldname": "evening_duty_out_round",
    "fieldtype": "Time",
-   "hidden": 1,
    "label": "Check Out Round"
   },
   {
@@ -165,7 +162,7 @@
  ],
  "icon": "fa fa-cog",
  "issingle": 1,
- "modified": "2019-12-27 10:48:01.723119",
+ "modified": "2019-12-27 12:19:44.963474",
  "modified_by": "Administrator",
  "module": "RGM VN",
  "name": "Checkin Settings",

@@ -78,6 +78,10 @@ def get_result_as_list(data, filters):
 			key_data[key]["lunch_out_name"] = "--------"
 			key_data[key]["lunch_in_name"] = "--------"
 			key_data[key]["duty_out_name"] = "--------"
+			key_data[key]["break_out_1_name"] = "--------"
+			key_data[key]["break_in_1_name"] = "--------"
+			key_data[key]["break_out_2_name"] = "--------"
+			key_data[key]["break_in_2_name"] = "--------"
 		
 		c_time = to_timedelta(d.c_time)
 
@@ -86,21 +90,37 @@ def get_result_as_list(data, filters):
 
 		key_data[key]["all_checkin"].append(cstr(d.c_time))
 		
-		if c_time > morning_duty_in_from and c_time < morning_duty_in_to and not key_data[key].get("duty_in"):
+		if c_time > morning_duty_in_from and c_time < morning_duty_in_to and not key_data[key].get("duty_in") and (d.checkin_type == None or d.checkin_type == "Duty In"):
 			key_data[key]["duty_in_name"] = d.c_name
 			key_data[key]["duty_in"] = d.c_time
 		
-		if c_time > lunch_out_from and c_time < lunch_out_to and not key_data[key].get("lunch_out"):
+		if c_time > lunch_out_from and c_time < lunch_out_to and not key_data[key].get("lunch_out") and (d.checkin_type == None or d.checkin_type == "Lunch Out"):
 			key_data[key]["lunch_out_name"] = d.c_name
 			key_data[key]["lunch_out"] = d.c_time
 		
-		if c_time > lunch_in_from and c_time < lunch_in_to and not key_data[key].get("lunch_in"):
+		if c_time > lunch_in_from and c_time < lunch_in_to and not key_data[key].get("lunch_in") and (d.checkin_type == None or d.checkin_type == "Lunch In"):
 			key_data[key]["lunch_in_name"] = d.c_name
 			key_data[key]["lunch_in"] = d.c_time
 		
-		if c_time > evening_duty_out_from and c_time < evening_duty_out_to and not key_data[key].get("duty_out"):
+		if c_time > evening_duty_out_from and c_time < evening_duty_out_to and not key_data[key].get("duty_out") and (d.checkin_type == None or d.checkin_type == "Duty Out"):
 			key_data[key]["duty_out_name"] = d.c_name
 			key_data[key]["duty_out"] = d.c_time
+		
+		if d.checkin_type == "Break Out 1":
+			key_data[key]["break_out_1_name"] = d.c_name
+			key_data[key]["break_out_1"] = d.c_time
+		
+		if d.checkin_type == "Break In 1":
+			key_data[key]["break_in_1_name"] = d.c_name
+			key_data[key]["break_in_1"] = d.c_time
+		
+		if d.checkin_type == "Break Out 2":
+			key_data[key]["break_out_2_name"] = d.c_name
+			key_data[key]["break_out_2"] = d.c_time
+		
+		if d.checkin_type == "Break In 2":
+			key_data[key]["break_in_2_name"] = d.c_name
+			key_data[key]["break_in_2"] = d.c_time
 
 	for employee in employees:
 		for c_date in dates:
@@ -121,6 +141,8 @@ def get_result_as_list(data, filters):
 				
 				key_data[key]["morning"] = 0
 				key_data[key]["lunch"] = 0
+				key_data[key]["break_1"] = 0
+				key_data[key]["break_2"] = 0
 				key_data[key]["evening"] = 0
 				key_data[key]["full_duty"] = 0
 				key_data[key]["ot_hours"] = 0
@@ -183,6 +205,12 @@ def get_result_as_list(data, filters):
 
 					if key_data[key].get("lunch_in") and key_data[key].get("lunch_out"):
 						key_data[key]["lunch"] = time_diff(key_data[key].get("lunch_in"), key_data[key].get("lunch_out"))
+					
+					if key_data[key].get("break_out_1") and key_data[key].get("break_in_1"):
+						key_data[key]["break_1"] = time_diff(key_data[key].get("break_in_1"), key_data[key].get("break_out_1"))
+					
+					if key_data[key].get("break_out_2") and key_data[key].get("break_in_2"):
+						key_data[key]["break_2"] = time_diff(key_data[key].get("break_in_2"), key_data[key].get("break_out_2"))
 
 					if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):	
 						key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))
@@ -195,6 +223,14 @@ def get_result_as_list(data, filters):
 						key_data[key]["error"] = "@"
 					elif key_data[key].get("duty_out") and not key_data[key].get("lunch_in"):
 						key_data[key]["error"] = "@"
+					elif key_data[key].get("break_out_1") and not key_data[key].get("break_in_1"):
+						key_data[key]["error"] = "@"
+					elif key_data[key].get("break_in_1") and not key_data[key].get("break_out_1"):
+						key_data[key]["error"] = "@"
+					elif key_data[key].get("break_out_2") and not key_data[key].get("break_in_2"):
+						key_data[key]["error"] = "@"
+					elif key_data[key].get("break_in_2") and not key_data[key].get("break_out_2"):
+						key_data[key]["error"] = "@"
 										
 
 					if key_data[key].get("morning") and key_data[key].get("evening"):
@@ -205,20 +241,32 @@ def get_result_as_list(data, filters):
 					key_data[key]["total_hours_float"] = 0
 					key_data[key]["morning_float"] = 0
 					key_data[key]["lunch_float"] = 0
+					key_data[key]["break_1_float"] = 0
+					key_data[key]["break_2_float"] = 0
+					key_data[key]["breaks_float"] = 0					
 					key_data[key]["evening_float"] = 0
 					key_data[key]["ot_hours_float"] = 0
 
+					if key_data[key].get("break_1") != 0:
+						key_data[key]["break_1_float"] = key_data[key].get("break_1").seconds/(60*60)
+					
+					if key_data[key].get("break_2") != 0:
+						key_data[key]["break_2_float"] = key_data[key].get("break_2").seconds/(60*60)
+					
+					key_data[key]["breaks_float"] = key_data[key]["break_1_float"] + key_data[key]["break_2_float"]
+
 					if key_data[key].get("morning") != 0:
-						key_data[key]["morning_float"] = key_data[key].get("morning").seconds/(60*60)
+						key_data[key]["morning_float"] = key_data[key].get("morning").seconds/(60*60) - key_data[key]["break_1_float"]
 						if key_data[key]["morning_float"] > max_morning_float:
 							key_data[key]["morning_float"] = max_morning_float
 						# key_data[key]["morning_float"] = round_time_up(key_data[key]["morning_float"])
+
 					
 					if key_data[key].get("lunch") != 0:
-						key_data[key]["lunch_float"] = key_data[key].get("lunch").seconds/(60*60)
+						key_data[key]["lunch_float"] = key_data[key].get("lunch").seconds/(60*60)					
 					
 					if key_data[key].get("evening") != 0:
-						key_data[key]["evening_float"] = key_data[key].get("evening").seconds/(60*60)
+						key_data[key]["evening_float"] = key_data[key].get("evening").seconds/(60*60) - key_data[key]["break_2_float"]
 						if key_data[key]["evening_float"] > max_evening_float:
 							key_data[key]["evening_float"] = max_evening_float
 						# key_data[key]["evening_float"] = round_time_up(key_data[key]["evening_float"])
@@ -242,6 +290,10 @@ def get_result_as_list(data, filters):
 					key_data[key]["lunch_out"] = key_data[key].get("lunch_out") or "--------"
 					key_data[key]["lunch_in"] = key_data[key].get("lunch_in") or "--------"
 					key_data[key]["duty_out"] = key_data[key].get("duty_out") or "--------"
+					key_data[key]["break_out_1"] = key_data[key].get("break_out_1") or "--------"
+					key_data[key]["break_in_1"] = key_data[key].get("break_in_1") or "--------"
+					key_data[key]["break_out_2"] = key_data[key].get("break_out_2") or "--------"
+					key_data[key]["break_in_2"] = key_data[key].get("break_in_2") or "--------"
 
 					row = key_data[key]
 
@@ -296,6 +348,20 @@ def get_columns():
 			"width": 80
 		},
 		{
+			"fieldname": "break_out_1",
+			"label": _("Break Out 1"),
+			"fieldtype": "Link",
+			"options": "Employee Checkin",
+			"width": 80
+		},
+		{
+			"fieldname": "break_in_1",
+			"label": _("Break In 1"),
+			"fieldtype": "Link",
+			"options": "Employee Checkin",
+			"width": 80
+		},
+		{
 			"fieldname": "lunch_out",
 			"label": _("Lunch Out"),
 			"fieldtype": "Link",
@@ -305,6 +371,20 @@ def get_columns():
 		{
 			"fieldname": "lunch_in",
 			"label": _("Lunch In"),
+			"fieldtype": "Link",
+			"options": "Employee Checkin",
+			"width": 80
+		},
+		{
+			"fieldname": "break_out_2",
+			"label": _("Break Out 2"),
+			"fieldtype": "Link",
+			"options": "Employee Checkin",
+			"width": 80
+		},
+		{
+			"fieldname": "break_in_2",
+			"label": _("Break In 2"),
 			"fieldtype": "Link",
 			"options": "Employee Checkin",
 			"width": 80
@@ -326,6 +406,13 @@ def get_columns():
 		{
 			"fieldname": "lunch_float",
 			"label": _("Lunch"),
+			"fieldtype": "Float",
+			"precision": 2,
+			"width": 80
+		},
+		{
+			"fieldname": "breaks_float",
+			"label": _("Breaks"),
 			"fieldtype": "Float",
 			"precision": 2,
 			"width": 80
@@ -383,12 +470,11 @@ def get_columns():
 			"width": 80
 		}
 	]
-	return columns
 
 def get_checkins(conditions, filters):
 
 	query = """Select c.name as c_name, c.employee as employee, e.employee_name, e.employee_number, e.department,
-	c.log_type,	date(c.time) as c_date, time(c.time) as c_time
+	c.log_type,	date(c.time) as c_date, time(c.time) as c_time, c.checkin_type
 	FROM `tabEmployee Checkin` c
 	LEFT JOIN `tabEmployee` e ON  e.name = c.employee
 	WHERE 1 %s

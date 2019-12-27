@@ -52,7 +52,15 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 		}	
 		value = default_formatter(value, row, column, data);
 
-		if(column.fieldname == "duty_in" || column.fieldname == "lunch_out" || column.fieldname == "lunch_in" || column.fieldname == "duty_out"){
+		if(column.fieldname == "duty_in" 
+			|| column.fieldname == "lunch_out" 
+			|| column.fieldname == "lunch_in" 
+			|| column.fieldname == "duty_out"
+			|| column.fieldname == "break_out_1"
+			|| column.fieldname == "break_in_1"
+			|| column.fieldname == "break_out_2"
+			|| column.fieldname == "break_in_2"
+		){
 			if (data[column.fieldname+"_name"]!="--------"){
 				value = $(`<span>${value}</span>`);
 				var link = "#"
@@ -91,6 +99,7 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 		me.data = data;
 		me.data.log_type = "UNKNOWN"
 		me.data.c_time = "07:30:00";
+		me.data.checkin_type = "Break Out 1";
 
 		if(me.data.fieldname == "duty_in"){
 			me.data.log_type = "IN"
@@ -104,6 +113,22 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 		}else if(me.data.fieldname == "duty_out"){
 			me.data.log_type = "OUT";
 			me.data.c_time = "17:00:00";
+		}else if(me.data.fieldname == "break_out_1"){
+			me.data.log_type = "OUT";
+			me.data.checkin_type = "Break Out 1";
+			me.data.c_time = "09:00:00";
+		}else if(me.data.fieldname == "break_in_1"){
+			me.data.log_type = "IN";
+			me.data.checkin_type = "Break In 1";
+			me.data.c_time = "10:00:00";
+		}else if(me.data.fieldname == "break_out_2"){
+			me.data.log_type = "OUT";
+			me.data.checkin_type = "Break Out 2";
+			me.data.c_time = "14:00:00";
+		}else if(me.data.fieldname == "break_in_2"){
+			me.data.log_type = "IN";
+			me.data.checkin_type = "Break In 2";
+			me.data.c_time = "15:00:00";
 		}
 
 		if (me.check_in) {
@@ -135,6 +160,7 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 				log_type: me.data.log_type,
 				time: me.data.c_date + " " + me.data.c_time,
 				time_only: me.data.c_time,
+				checkin_type: me.data.checkin_type,
 			}).then(() => {
 				frappe.query_report.refresh();
 			})

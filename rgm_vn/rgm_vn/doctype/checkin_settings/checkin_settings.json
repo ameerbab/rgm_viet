@@ -1,0 +1,186 @@
+{
+ "creation": "2019-12-27 09:03:04.195703",
+ "doctype": "DocType",
+ "document_type": "Other",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_morning_duty_in",
+  "morning_duty_in",
+  "morning_duty_in_round",
+  "col_1",
+  "morning_duty_in_from",
+  "morning_duty_in_to",
+  "section_lunch_out",
+  "lunch_out",
+  "lunch_out_round",
+  "col_2",
+  "lunch_out_from",
+  "lunch_out_to",
+  "section_lunch_in",
+  "lunch_in",
+  "lunch_in_round",
+  "col_3",
+  "lunch_in_from",
+  "lunch_in_to",
+  "section_evening_duty_out",
+  "evening_duty_out",
+  "evening_duty_out_round",
+  "col_4",
+  "evening_duty_out_from",
+  "evening_duty_out_to"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_morning_duty_in",
+   "fieldtype": "Section Break",
+   "label": "Morning Duty In"
+  },
+  {
+   "fieldname": "morning_duty_in",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Check In",
+   "reqd": 1
+  },
+  {
+   "fieldname": "morning_duty_in_round",
+   "fieldtype": "Time",
+   "label": "Check In Round"
+  },
+  {
+   "fieldname": "col_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "morning_duty_in_from",
+   "fieldtype": "Time",
+   "label": "From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "morning_duty_in_to",
+   "fieldtype": "Time",
+   "label": "To",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lunch_in",
+   "fieldtype": "Time",
+   "label": "Check In"
+  },
+  {
+   "fieldname": "lunch_in_round",
+   "fieldtype": "Time",
+   "hidden": 1,
+   "label": "Check In Round"
+  },
+  {
+   "fieldname": "col_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lunch_in_from",
+   "fieldtype": "Time",
+   "label": "From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lunch_in_to",
+   "fieldtype": "Time",
+   "label": "To",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_lunch_out",
+   "fieldtype": "Section Break",
+   "label": "Lunch Check Out"
+  },
+  {
+   "fieldname": "lunch_out",
+   "fieldtype": "Time",
+   "label": "Check Out",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lunch_out_round",
+   "fieldtype": "Time",
+   "hidden": 1,
+   "label": "Check In Round"
+  },
+  {
+   "fieldname": "lunch_out_from",
+   "fieldtype": "Time",
+   "label": "From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lunch_out_to",
+   "fieldtype": "Time",
+   "label": "To",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_lunch_in",
+   "fieldtype": "Section Break",
+   "label": "Lunch Check In"
+  },
+  {
+   "fieldname": "col_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_evening_duty_out",
+   "fieldtype": "Section Break",
+   "label": "Evening Duty Check Out"
+  },
+  {
+   "fieldname": "evening_duty_out",
+   "fieldtype": "Time",
+   "label": "Check Out",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evening_duty_out_round",
+   "fieldtype": "Time",
+   "hidden": 1,
+   "label": "Check Out Round"
+  },
+  {
+   "fieldname": "col_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "evening_duty_out_from",
+   "fieldtype": "Time",
+   "label": "From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evening_duty_out_to",
+   "fieldtype": "Time",
+   "label": "To",
+   "reqd": 1
+  }
+ ],
+ "icon": "fa fa-cog",
+ "issingle": 1,
+ "modified": "2019-12-27 10:48:01.723119",
+ "modified_by": "Administrator",
+ "module": "RGM VN",
+ "name": "Checkin Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "ASC"
+}

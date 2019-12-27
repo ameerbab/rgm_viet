@@ -14,5 +14,15 @@ def get_data():
 					"doctype": "Employee Checkin"
 				},
 			]
-		}
+		},
+		{
+			"label": _("Settings"),
+			"icon": "fa fa-cog",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Checkin Settings",
+				}
+			]
+		},
 	]

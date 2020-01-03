@@ -32,29 +32,38 @@ def get_result_as_list(data, filters):
 	setting = frappe.get_doc("Checkin Settings")
 
 	morning_duty_in = to_timedelta(setting.morning_duty_in)
-	morning_duty_in_round = to_timedelta(setting.morning_duty_in_round)
 	morning_duty_in_from = to_timedelta(setting.morning_duty_in_from)
 	morning_duty_in_to = to_timedelta(setting.morning_duty_in_to)
+	morning_duty_in_round_from = to_timedelta(setting.morning_duty_in_round_from)
+	morning_duty_in_round_to = to_timedelta(setting.morning_duty_in_round_to)
 	
 	lunch_out = to_timedelta(setting.lunch_out)
 	lunch_out_from = to_timedelta(setting.lunch_out_from)
 	lunch_out_to = to_timedelta(setting.lunch_out_to)
+	lunch_out_round_from = to_timedelta(setting.lunch_out_round_from)
+	lunch_out_round_to = to_timedelta(setting.lunch_out_round_to)
 
 	lunch_in = to_timedelta(setting.lunch_in)
 	lunch_in_from = to_timedelta(setting.lunch_in_from)
 	lunch_in_to = to_timedelta(setting.lunch_in_to)
+	lunch_in_round_from = to_timedelta(setting.lunch_in_round_from)
+	lunch_in_round_to = to_timedelta(setting.lunch_in_round_to)
 
 	evening_duty_out = to_timedelta(setting.evening_duty_out)
 	evening_duty_out_from = to_timedelta(setting.evening_duty_out_from)
 	evening_duty_out_to = to_timedelta(setting.evening_duty_out_to)
+	evening_duty_out_round_from = to_timedelta(setting.evening_duty_out_round_from)
+	evening_duty_out_round_to = to_timedelta(setting.evening_duty_out_round_to)
 
 	max_morning_float = time_diff(lunch_out, morning_duty_in).seconds/(60*60)
 	max_evening_float = time_diff(evening_duty_out, lunch_in).seconds/(60*60)
 	max_day_float = max_morning_float + max_evening_float
 	
 
-	time_late_in = morning_duty_in + to_timedelta("00:15:00")
-	time_early_out = evening_duty_out
+	morning_duty_in_late = morning_duty_in
+	lunch_in_late = lunch_in + to_timedelta("00:00:30")
+	lunch_out_early = lunch_out
+	evening_duty_out_early = evening_duty_out
 
 	for d in data:
 		key = (d.employee, d.c_date)
@@ -90,19 +99,19 @@ def get_result_as_list(data, filters):
 
 		key_data[key]["all_checkin"].append(cstr(d.c_time))
 		
-		if c_time > morning_duty_in_from and c_time < morning_duty_in_to and not key_data[key].get("duty_in") and (d.checkin_type == None or d.checkin_type == "Duty In"):
+		if c_time >= morning_duty_in_from and c_time <= morning_duty_in_to and not key_data[key].get("duty_in") and (d.checkin_type == None or d.checkin_type == "" or d.checkin_type == "Duty In"):
 			key_data[key]["duty_in_name"] = d.c_name
 			key_data[key]["duty_in"] = d.c_time
 		
-		if c_time > lunch_out_from and c_time < lunch_out_to and not key_data[key].get("lunch_out") and (d.checkin_type == None or d.checkin_type == "Lunch Out"):
+		if c_time >= lunch_out_from and c_time <= lunch_out_to and not key_data[key].get("lunch_out") and (d.checkin_type == None or d.checkin_type == "" or d.checkin_type == "Lunch Out"):
 			key_data[key]["lunch_out_name"] = d.c_name
 			key_data[key]["lunch_out"] = d.c_time
 		
-		if c_time > lunch_in_from and c_time < lunch_in_to and not key_data[key].get("lunch_in") and (d.checkin_type == None or d.checkin_type == "Lunch In"):
+		if c_time >= lunch_in_from and c_time <= lunch_in_to and not key_data[key].get("lunch_in") and (d.checkin_type == None or d.checkin_type == "" or d.checkin_type == "Lunch In"):
 			key_data[key]["lunch_in_name"] = d.c_name
 			key_data[key]["lunch_in"] = d.c_time
 		
-		if c_time > evening_duty_out_from and c_time < evening_duty_out_to and not key_data[key].get("duty_out") and (d.checkin_type == None or d.checkin_type == "Duty Out"):
+		if c_time >= evening_duty_out_from and c_time <= evening_duty_out_to and not key_data[key].get("duty_out") and (d.checkin_type == None or d.checkin_type == "" or d.checkin_type == "Duty Out"):
 			key_data[key]["duty_out_name"] = d.c_name
 			key_data[key]["duty_out"] = d.c_time
 		
@@ -151,11 +160,19 @@ def get_result_as_list(data, filters):
 				key_data[key]["early_out"] = ""
 
 				if key_data[key].get("duty_in"):
-					if key_data[key].get("duty_in") > time_late_in:
+					if key_data[key].get("duty_in") > morning_duty_in_late:
+						key_data[key]["late_in"] = "Late In"
+				
+				if key_data[key].get("lunch_in"):
+					if key_data[key].get("lunch_in") > lunch_in_late:
 						key_data[key]["late_in"] = "Late In"
 				
 				if key_data[key].get("duty_out"):
-					if key_data[key].get("duty_out") < time_early_out:
+					if key_data[key].get("duty_out") < evening_duty_out_early:
+						key_data[key]["early_out"] = "Early Out"
+				
+				if key_data[key].get("lunch_out"):
+					if key_data[key].get("lunch_out") < lunch_out_early:
 						key_data[key]["early_out"] = "Early Out"
 
 				
@@ -175,23 +192,24 @@ def get_result_as_list(data, filters):
 				if row_show == True:
 
 					if key_data[key].get("duty_in"):
-						if key_data[key]["duty_in"] <= morning_duty_in_round:
-							key_data[key]["duty_in"] = morning_duty_in_round
-						elif key_data[key]["duty_in"] <= morning_duty_in:
+						if key_data[key]["duty_in"] <= morning_duty_in_round_from:
+							key_data[key]["duty_in"] = morning_duty_in_round_from
+						elif key_data[key]["duty_in"] <= morning_duty_in_round_to:
 							key_data[key]["duty_in"] = morning_duty_in
 					
 					if key_data[key].get("lunch_out"):
-						if key_data[key]["lunch_out"] >= lunch_out:
+						if key_data[key]["lunch_out"] >= lunch_out_round_from and key_data[key]["lunch_out"] <= lunch_out_round_to:
 							key_data[key]["lunch_out"] = lunch_out
 
 					if key_data[key].get("lunch_in"):
-						if key_data[key]["lunch_in"] <= lunch_in:
+						if key_data[key]["lunch_in"] <= lunch_in_round_from:
+							key_data[key]["lunch_in"] = lunch_in_round_from
+						elif key_data[key]["lunch_in"] <= lunch_in_round_to:
 							key_data[key]["lunch_in"] = lunch_in
 
 					if key_data[key].get("duty_out"):
-						if key_data[key]["duty_out"] >= evening_duty_out:
+						if key_data[key]["duty_out"] >= evening_duty_out_round_from and key_data[key]["duty_out"] <= evening_duty_out_round_to:
 							key_data[key]["duty_out"] = evening_duty_out
-
 
 					if key_data[key].get("lunch_out") and key_data[key].get("duty_in"):
 						
@@ -213,7 +231,14 @@ def get_result_as_list(data, filters):
 						key_data[key]["break_2"] = time_diff(key_data[key].get("break_in_2"), key_data[key].get("break_out_2"))
 
 					if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):	
-						key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))
+
+						key_data[key]["evening_from"] = key_data[key]["duty_in"]
+						if key_data[key]["evening_from"] <= lunch_in:
+							key_data[key]["evening_from"] = lunch_in
+
+						key_data[key]["evening_to"] = key_data[key]["duty_out"]
+
+						key_data[key]["evening"] = time_diff(key_data[key].get("evening_to"), key_data[key].get("evening_from"))
 
 					if key_data[key].get("duty_in") and not key_data[key].get("lunch_out"):
 						key_data[key]["error"] = "@"
@@ -256,9 +281,11 @@ def get_result_as_list(data, filters):
 					key_data[key]["breaks_float"] = key_data[key]["break_1_float"] + key_data[key]["break_2_float"]
 
 					if key_data[key].get("morning") != 0:
+						frappe.errprint(key_data[key].get("morning").seconds/(60*60))
+						frappe.errprint(key_data[key].get("break_1_float"))
 						key_data[key]["morning_float"] = key_data[key].get("morning").seconds/(60*60) - key_data[key]["break_1_float"]
-						if key_data[key]["morning_float"] > max_morning_float:
-							key_data[key]["morning_float"] = max_morning_float
+						# if key_data[key]["morning_float"] > max_morning_float:
+						# 	key_data[key]["morning_float"] = max_morning_float
 						# key_data[key]["morning_float"] = round_time_up(key_data[key]["morning_float"])
 
 					
@@ -267,8 +294,8 @@ def get_result_as_list(data, filters):
 					
 					if key_data[key].get("evening") != 0:
 						key_data[key]["evening_float"] = key_data[key].get("evening").seconds/(60*60) - key_data[key]["break_2_float"]
-						if key_data[key]["evening_float"] > max_evening_float:
-							key_data[key]["evening_float"] = max_evening_float
+						# if key_data[key]["evening_float"] > max_evening_float:
+						# 	key_data[key]["evening_float"] = max_evening_float
 						# key_data[key]["evening_float"] = round_time_up(key_data[key]["evening_float"])
 					
 					key_data[key]["total_hours_float"] = key_data[key]["morning_float"] + key_data[key]["evening_float"]

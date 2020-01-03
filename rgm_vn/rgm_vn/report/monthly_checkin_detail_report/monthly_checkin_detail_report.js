@@ -99,7 +99,7 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 		me.data = data;
 		me.data.log_type = "UNKNOWN"
 		me.data.c_time = "07:30:00";
-		me.data.checkin_type = "Break Out 1";
+		me.data.checkin_type = "";
 
 		if(me.data.fieldname == "duty_in"){
 			me.data.log_type = "IN"

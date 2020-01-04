@@ -232,7 +232,7 @@ def get_result_as_list(data, filters):
 
 					if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):	
 
-						key_data[key]["evening_from"] = key_data[key]["duty_in"]
+						key_data[key]["evening_from"] = key_data[key]["lunch_in"]
 						if key_data[key]["evening_from"] <= lunch_in:
 							key_data[key]["evening_from"] = lunch_in
 

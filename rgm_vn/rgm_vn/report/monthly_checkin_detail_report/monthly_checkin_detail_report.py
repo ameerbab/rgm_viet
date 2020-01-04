@@ -281,8 +281,6 @@ def get_result_as_list(data, filters):
 					key_data[key]["breaks_float"] = key_data[key]["break_1_float"] + key_data[key]["break_2_float"]
 
 					if key_data[key].get("morning") != 0:
-						frappe.errprint(key_data[key].get("morning").seconds/(60*60))
-						frappe.errprint(key_data[key].get("break_1_float"))
 						key_data[key]["morning_float"] = key_data[key].get("morning").seconds/(60*60) - key_data[key]["break_1_float"]
 						# if key_data[key]["morning_float"] > max_morning_float:
 						# 	key_data[key]["morning_float"] = max_morning_float

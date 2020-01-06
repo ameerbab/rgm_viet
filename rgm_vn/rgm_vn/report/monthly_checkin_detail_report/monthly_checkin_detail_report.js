@@ -10,13 +10,13 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 			"fieldtype": "Select",
 			"options": "Jan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec",
 			"default": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
-				"Dec"][frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()-1],
+				"Dec"][frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()?frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()-1:11],
 		},
 		{
 			"fieldname": "year",
 			"label": __("Year"),
 			"fieldtype": "Data",
-			"default": new Date().getFullYear()
+			"default": frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()?new Date().getFullYear():new Date().getFullYear()-1
 		},
 		{
 			"fieldname":"employee",

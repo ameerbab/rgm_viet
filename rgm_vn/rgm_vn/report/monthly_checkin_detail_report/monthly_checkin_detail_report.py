@@ -29,41 +29,58 @@ def get_result_as_list(data, filters):
 	employees = []
 	dates = []
 
-	setting = frappe.get_doc("Checkin Settings")
+	company = filters.get("company")
 
-	morning_duty_in = to_timedelta(setting.morning_duty_in)
-	morning_duty_in_from = to_timedelta(setting.morning_duty_in_from)
-	morning_duty_in_to = to_timedelta(setting.morning_duty_in_to)
-	morning_duty_in_round_from = to_timedelta(setting.morning_duty_in_round_from)
-	morning_duty_in_round_to = to_timedelta(setting.morning_duty_in_round_to)
-	
-	lunch_out = to_timedelta(setting.lunch_out)
-	lunch_out_from = to_timedelta(setting.lunch_out_from)
-	lunch_out_to = to_timedelta(setting.lunch_out_to)
-	lunch_out_round_from = to_timedelta(setting.lunch_out_round_from)
-	lunch_out_round_to = to_timedelta(setting.lunch_out_round_to)
+	checkin_settings = frappe.get_doc("Checkin Settings", company)
 
-	lunch_in = to_timedelta(setting.lunch_in)
-	lunch_in_from = to_timedelta(setting.lunch_in_from)
-	lunch_in_to = to_timedelta(setting.lunch_in_to)
-	lunch_in_round_from = to_timedelta(setting.lunch_in_round_from)
-	lunch_in_round_to = to_timedelta(setting.lunch_in_round_to)
+	settings_weekday = frappe.get_doc("Checkin Shift Type", checkin_settings.weekday)
+	settings_weekend = frappe.get_doc("Checkin Shift Type", checkin_settings.weekend)
 
-	evening_duty_out = to_timedelta(setting.evening_duty_out)
-	evening_duty_out_from = to_timedelta(setting.evening_duty_out_from)
-	evening_duty_out_to = to_timedelta(setting.evening_duty_out_to)
-	evening_duty_out_round_from = to_timedelta(setting.evening_duty_out_round_from)
-	evening_duty_out_round_to = to_timedelta(setting.evening_duty_out_round_to)
+	settings = frappe._dict()
 
-	max_morning_float = time_diff(lunch_out, morning_duty_in).seconds/(60*60)
-	max_evening_float = time_diff(evening_duty_out, lunch_in).seconds/(60*60)
-	max_day_float = max_morning_float + max_evening_float
-	
+	for shift in ["weekday", "weekend"]:
+		settings[shift] = frappe._dict()
 
-	morning_duty_in_late = morning_duty_in
-	lunch_in_late = lunch_in + to_timedelta("00:00:30")
-	lunch_out_early = lunch_out
-	evening_duty_out_early = evening_duty_out
+		if shift == "weekday":
+			settings_shift = settings_weekday
+		else:
+			settings_shift = settings_weekend
+
+		settings[shift]["morning_duty_in"] = to_timedelta(settings_shift.morning_duty_in)
+		settings[shift]["morning_duty_in_from"] = to_timedelta(settings_shift.morning_duty_in_from)
+		settings[shift]["morning_duty_in_to"] = to_timedelta(settings_shift.morning_duty_in_to)
+		settings[shift]["morning_duty_in_round_from"] = to_timedelta(settings_shift.morning_duty_in_round_from)
+		settings[shift]["morning_duty_in_round_to"] = to_timedelta(settings_shift.morning_duty_in_round_to)
+		
+		settings[shift]["lunch_out"] = to_timedelta(settings_shift.lunch_out)
+		settings[shift]["lunch_out_from"] = to_timedelta(settings_shift.lunch_out_from)
+		settings[shift]["lunch_out_to"] = to_timedelta(settings_shift.lunch_out_to)
+		settings[shift]["lunch_out_round_from"] = to_timedelta(settings_shift.lunch_out_round_from)
+		settings[shift]["lunch_out_round_to"] = to_timedelta(settings_shift.lunch_out_round_to)
+
+		settings[shift]["lunch_in"] = to_timedelta(settings_shift.lunch_in)
+		settings[shift]["lunch_in_from"] = to_timedelta(settings_shift.lunch_in_from)
+		settings[shift]["lunch_in_to"] = to_timedelta(settings_shift.lunch_in_to)
+		settings[shift]["lunch_in_round_from"] = to_timedelta(settings_shift.lunch_in_round_from)
+		settings[shift]["lunch_in_round_to"] = to_timedelta(settings_shift.lunch_in_round_to)
+
+		settings[shift]["evening_duty_out"] = to_timedelta(settings_shift.evening_duty_out)
+		settings[shift]["evening_duty_out_from"] = to_timedelta(settings_shift.evening_duty_out_from)
+		settings[shift]["evening_duty_out_to"] = to_timedelta(settings_shift.evening_duty_out_to)
+		settings[shift]["evening_duty_out_round_from"] = to_timedelta(settings_shift.evening_duty_out_round_from)
+		settings[shift]["evening_duty_out_round_to"] = to_timedelta(settings_shift.evening_duty_out_round_to)
+
+		settings[shift]["max_morning_float"] = time_diff(settings[shift]["lunch_out"], settings[shift]["morning_duty_in"]).seconds/(60*60)
+		settings[shift]["max_evening_float"] = time_diff(settings[shift]["evening_duty_out"], settings[shift]["lunch_in"]).seconds/(60*60)
+		settings[shift]["max_day_float"] = settings[shift]["max_morning_float"] + settings[shift]["max_evening_float"]
+		
+
+		settings[shift]["morning_duty_in_late"] = settings[shift]["morning_duty_in"]
+		settings[shift]["lunch_in_late"] = settings[shift]["lunch_in"] + to_timedelta("00:00:30")
+		settings[shift]["lunch_out_early"] = settings[shift]["lunch_out"]
+		settings[shift]["evening_duty_out_early"] = settings[shift]["evening_duty_out"]
+
+
 
 	for d in data:
 		key = (d.employee, d.c_date)
@@ -73,6 +90,48 @@ def get_result_as_list(data, filters):
 		
 		if d.c_date not in dates:
 			dates.append(d.c_date)
+		
+		c_day =  d.c_date.strftime("%a")
+
+		if c_day == "Sat" or c_day == "Sun":
+			shift = "weekend"
+		else:
+			shift = "weekday"
+
+		morning_duty_in = settings[shift]["morning_duty_in"]
+		morning_duty_in_from = settings[shift]["morning_duty_in_from"]
+		morning_duty_in_to = settings[shift]["morning_duty_in_to"]
+		morning_duty_in_round_from = settings[shift]["morning_duty_in_round_from"]
+		morning_duty_in_round_to = settings[shift]["morning_duty_in_round_to"]
+		
+		lunch_out = settings[shift]["lunch_out"]
+		lunch_out_from = settings[shift]["lunch_out_from"]
+		lunch_out_to = settings[shift]["lunch_out_to"]
+		lunch_out_round_from = settings[shift]["lunch_out_round_from"]
+		lunch_out_round_to = settings[shift]["lunch_out_round_to"]
+
+		lunch_in = settings[shift]["lunch_in"]
+		lunch_in_from = settings[shift]["lunch_in_from"]
+		lunch_in_to = settings[shift]["lunch_in_to"]
+		lunch_in_round_from = settings[shift]["lunch_in_round_from"]
+		lunch_in_round_to = settings[shift]["lunch_in_round_to"]
+
+		evening_duty_out = settings[shift]["evening_duty_out"]
+		evening_duty_out_from = settings[shift]["evening_duty_out_from"]
+		evening_duty_out_to = settings[shift]["evening_duty_out_to"]
+		evening_duty_out_round_from = settings[shift]["evening_duty_out_round_from"]
+		evening_duty_out_round_to = settings[shift]["evening_duty_out_round_to"]
+
+		max_morning_float = settings[shift]["max_morning_float"]
+		max_evening_float = settings[shift]["max_evening_float"]
+		max_day_float = settings[shift]["max_day_float"]
+		
+
+		morning_duty_in_late = settings[shift]["morning_duty_in_late"]
+		lunch_in_late = settings[shift]["lunch_in_late"]
+		lunch_out_early = settings[shift]["lunch_out_early"]
+		evening_duty_out_early = settings[shift]["evening_duty_out_early"]
+		
 
 		if not key_data.get(key):
 			
@@ -147,6 +206,46 @@ def get_result_as_list(data, filters):
 				# 		error = "@"
 
 				key_data[key]["c_day"] =  c_date.strftime("%a")
+
+				if key_data[key]["c_day"] == "Sat" or key_data[key]["c_day"] == "Sun":
+					shift = "weekend"
+				else:
+					shift = "weekday"
+
+				morning_duty_in = settings[shift]["morning_duty_in"]
+				morning_duty_in_from = settings[shift]["morning_duty_in_from"]
+				morning_duty_in_to = settings[shift]["morning_duty_in_to"]
+				morning_duty_in_round_from = settings[shift]["morning_duty_in_round_from"]
+				morning_duty_in_round_to = settings[shift]["morning_duty_in_round_to"]
+				
+				lunch_out = settings[shift]["lunch_out"]
+				lunch_out_from = settings[shift]["lunch_out_from"]
+				lunch_out_to = settings[shift]["lunch_out_to"]
+				lunch_out_round_from = settings[shift]["lunch_out_round_from"]
+				lunch_out_round_to = settings[shift]["lunch_out_round_to"]
+
+				lunch_in = settings[shift]["lunch_in"]
+				lunch_in_from = settings[shift]["lunch_in_from"]
+				lunch_in_to = settings[shift]["lunch_in_to"]
+				lunch_in_round_from = settings[shift]["lunch_in_round_from"]
+				lunch_in_round_to = settings[shift]["lunch_in_round_to"]
+
+				evening_duty_out = settings[shift]["evening_duty_out"]
+				evening_duty_out_from = settings[shift]["evening_duty_out_from"]
+				evening_duty_out_to = settings[shift]["evening_duty_out_to"]
+				evening_duty_out_round_from = settings[shift]["evening_duty_out_round_from"]
+				evening_duty_out_round_to = settings[shift]["evening_duty_out_round_to"]
+
+				max_morning_float = settings[shift]["max_morning_float"]
+				max_evening_float = settings[shift]["max_evening_float"]
+				max_day_float = settings[shift]["max_day_float"]
+				
+
+				morning_duty_in_late = settings[shift]["morning_duty_in_late"]
+				lunch_in_late = settings[shift]["lunch_in_late"]
+				lunch_out_early = settings[shift]["lunch_out_early"]
+				evening_duty_out_early = settings[shift]["evening_duty_out_early"]
+
 				
 				key_data[key]["morning"] = 0
 				key_data[key]["lunch"] = 0
@@ -256,7 +355,9 @@ def get_result_as_list(data, filters):
 						key_data[key]["error"] = "@"
 					elif key_data[key].get("break_in_2") and not key_data[key].get("break_out_2"):
 						key_data[key]["error"] = "@"
-										
+					
+					if shift == "weekday" and not (key_data[key]["morning"] and key_data[key]["evening"]):
+						key_data[key]["error"] = "Missing Punches"
 
 					if key_data[key].get("morning") and key_data[key].get("evening"):
 						key_data[key]["full_duty"] = 1
@@ -364,7 +465,13 @@ def get_columns():
 			"label": _("Date"),
 			"fieldtype": "Date",
 			"width": 80
-		},		
+		},	
+		{
+			"fieldname": "all_checkin",
+			"label": _("All Checkin"),
+			"fieldtype": "Data",
+			"width": 230
+		},	
 		{
 			"fieldname": "duty_in",
 			"label": _("Duty In"),
@@ -481,12 +588,6 @@ def get_columns():
 			"label": _("Early Out"),
 			"fieldtype": "Data",
 			"width": 80
-		},
-		{
-			"fieldname": "all_checkin",
-			"label": _("All Checkin"),
-			"fieldtype": "Data",
-			"width": 230
 		},
 		{
 			"fieldname": "error",

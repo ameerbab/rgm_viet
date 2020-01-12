@@ -21,6 +21,10 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
+					"name": "Checkin Shift Type",
+				},
+				{
+					"type": "doctype",
 					"name": "Checkin Settings",
 				}
 			]

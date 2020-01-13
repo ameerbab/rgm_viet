@@ -47,10 +47,18 @@ def get_result_as_list(data, filters):
 			settings_shift = settings_weekend
 
 		settings[shift]["morning_duty_in"] = to_timedelta(settings_shift.morning_duty_in)
+
 		settings[shift]["morning_duty_in_from"] = to_timedelta(settings_shift.morning_duty_in_from)
 		settings[shift]["morning_duty_in_to"] = to_timedelta(settings_shift.morning_duty_in_to)
+
 		settings[shift]["morning_duty_in_round_from"] = to_timedelta(settings_shift.morning_duty_in_round_from)
 		settings[shift]["morning_duty_in_round_to"] = to_timedelta(settings_shift.morning_duty_in_round_to)
+
+		settings[shift]["morning_duty_in_display"] = to_timedelta(settings_shift.morning_duty_in_display)
+		settings[shift]["morning_duty_in_display_from"] = to_timedelta(settings_shift.morning_duty_in_display_from)
+		settings[shift]["morning_duty_in_display_to"] = to_timedelta(settings_shift.morning_duty_in_display_to)
+
+
 		
 		settings[shift]["lunch_out"] = to_timedelta(settings_shift.lunch_out)
 		settings[shift]["lunch_out_from"] = to_timedelta(settings_shift.lunch_out_from)
@@ -103,6 +111,9 @@ def get_result_as_list(data, filters):
 		morning_duty_in_to = settings[shift]["morning_duty_in_to"]
 		morning_duty_in_round_from = settings[shift]["morning_duty_in_round_from"]
 		morning_duty_in_round_to = settings[shift]["morning_duty_in_round_to"]
+		morning_duty_in_display = settings[shift]["morning_duty_in_display"]
+		morning_duty_in_display_from = settings[shift]["morning_duty_in_display_from"]
+		morning_duty_in_display_to = settings[shift]["morning_duty_in_display_to"]
 		
 		lunch_out = settings[shift]["lunch_out"]
 		lunch_out_from = settings[shift]["lunch_out_from"]
@@ -217,6 +228,10 @@ def get_result_as_list(data, filters):
 				morning_duty_in_to = settings[shift]["morning_duty_in_to"]
 				morning_duty_in_round_from = settings[shift]["morning_duty_in_round_from"]
 				morning_duty_in_round_to = settings[shift]["morning_duty_in_round_to"]
+
+				morning_duty_in_display = settings[shift]["morning_duty_in_display"]
+				morning_duty_in_display_from = settings[shift]["morning_duty_in_display_from"]
+				morning_duty_in_display_to = settings[shift]["morning_duty_in_display_to"]
 				
 				lunch_out = settings[shift]["lunch_out"]
 				lunch_out_from = settings[shift]["lunch_out_from"]
@@ -291,10 +306,10 @@ def get_result_as_list(data, filters):
 				if row_show == True:
 
 					if key_data[key].get("duty_in"):
-						if key_data[key]["duty_in"] <= morning_duty_in_round_from:
-							key_data[key]["duty_in"] = morning_duty_in_round_from
-						elif key_data[key]["duty_in"] <= morning_duty_in_round_to:
+						if key_data[key]["duty_in"] >= morning_duty_in_round_from and key_data[key]["duty_in"] <= morning_duty_in_round_to:
 							key_data[key]["duty_in"] = morning_duty_in
+						elif key_data[key]["duty_in"] >= morning_duty_in_display_from and key_data[key]["duty_in"] <= morning_duty_in_display_to:
+							key_data[key]["duty_in"] = morning_duty_in_display
 					
 					if key_data[key].get("lunch_out"):
 						if key_data[key]["lunch_out"] >= lunch_out_round_from and key_data[key]["lunch_out"] <= lunch_out_round_to:

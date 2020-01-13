@@ -15,6 +15,10 @@
   "col_1_2",
   "morning_duty_in_round_from",
   "morning_duty_in_round_to",
+  "col_1_3",
+  "morning_duty_in_display_from",
+  "morning_duty_in_display_to",
+  "morning_duty_in_display",
   "section_lunch_out",
   "lunch_out",
   "col_2",
@@ -23,6 +27,10 @@
   "col_2_2",
   "lunch_out_round_from",
   "lunch_out_round_to",
+  "col_2_3",
+  "lunch_out_display_from",
+  "lunch_out_display_to",
+  "lunch_out_display",
   "section_lunch_in",
   "lunch_in",
   "col_3",
@@ -31,6 +39,10 @@
   "col_3_2",
   "lunch_in_round_from",
   "lunch_in_round_to",
+  "col_3_3",
+  "lunch_in_display_from",
+  "lunch_in_display_to",
+  "lunch_in_display",
   "section_evening_duty_out",
   "evening_duty_out",
   "col_4",
@@ -38,7 +50,11 @@
   "evening_duty_out_to",
   "col_4_2",
   "evening_duty_out_round_from",
-  "evening_duty_out_round_to"
+  "evening_duty_out_round_to",
+  "col_4_3",
+  "evening_duty_out_display_from",
+  "evening_duty_out_display_to",
+  "evening_duty_out_display"
  ],
  "fields": [
   {
@@ -220,10 +236,98 @@
    "fieldtype": "Time",
    "label": "Grace Period End",
    "reqd": 1
+  },
+  {
+   "fieldname": "col_1_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "morning_duty_in_display",
+   "fieldtype": "Time",
+   "label": "Display Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "morning_duty_in_display_from",
+   "fieldtype": "Time",
+   "label": "Display Period Start",
+   "reqd": 1
+  },
+  {
+   "fieldname": "morning_duty_in_display_to",
+   "fieldtype": "Time",
+   "label": "Display Period End",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_2_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lunch_out_display",
+   "fieldtype": "Time",
+   "label": "Display Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lunch_out_display_from",
+   "fieldtype": "Time",
+   "label": "Display Period Start",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lunch_out_display_to",
+   "fieldtype": "Time",
+   "label": "Display Period End",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_3_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lunch_in_display",
+   "fieldtype": "Time",
+   "label": "Display Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lunch_in_display_from",
+   "fieldtype": "Time",
+   "label": "Display Period Start",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lunch_in_display_to",
+   "fieldtype": "Time",
+   "label": "Display Period End",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_4_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "evening_duty_out_display",
+   "fieldtype": "Time",
+   "label": "Display Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evening_duty_out_display_from",
+   "fieldtype": "Time",
+   "label": "Display Period Start",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evening_duty_out_display_to",
+   "fieldtype": "Time",
+   "label": "Display Period End",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-cog",
- "modified": "2020-01-12 23:32:32.166613",
+ "modified": "2020-01-13 01:00:08.531405",
  "modified_by": "Administrator",
  "module": "RGM VN",
  "name": "Checkin Shift Type",

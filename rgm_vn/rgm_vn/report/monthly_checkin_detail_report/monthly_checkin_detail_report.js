@@ -103,15 +103,19 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 
 		if(me.data.fieldname == "duty_in"){
 			me.data.log_type = "IN"
+			me.data.checkin_type = "Duty In";
 			me.data.c_time = "07:30:00";
 		}else if(me.data.fieldname == "lunch_out"){
 			me.data.log_type = "OUT";
+			me.data.checkin_type = "Lunch Out";
 			me.data.c_time = "11:45:00";
 		}else if(me.data.fieldname == "lunch_in"){
 			me.data.log_type = "IN"
+			me.data.checkin_type = "Lunch In";
 			me.data.c_time = "12:30:00";
 		}else if(me.data.fieldname == "duty_out"){
 			me.data.log_type = "OUT";
+			me.data.checkin_type = "Duty Out";
 			me.data.c_time = "17:00:00";
 		}else if(me.data.fieldname == "break_out_1"){
 			me.data.log_type = "OUT";

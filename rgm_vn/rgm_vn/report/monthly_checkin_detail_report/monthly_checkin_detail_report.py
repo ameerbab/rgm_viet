@@ -194,19 +194,19 @@ def get_result_as_list(data, filters):
 
 		key_data[key]["all_checkin"].append(cstr(d.c_time))
 		
-		if c_time >= morning_duty_in_from and c_time <= morning_duty_in_to and not key_data[key].get("duty_in") and (d.checkin_type == None or d.checkin_type == "" or d.checkin_type == "Duty In"):
+		if d.checkin_type == "Duty In" or (c_time >= morning_duty_in_from and c_time <= morning_duty_in_to and not key_data[key].get("duty_in") and (d.checkin_type == None or d.checkin_type == "")):
 			key_data[key]["duty_in_name"] = d.c_name
 			key_data[key]["duty_in"] = d.c_time
 		
-		if c_time >= lunch_out_from and c_time <= lunch_out_to and not key_data[key].get("lunch_out") and (d.checkin_type == None or d.checkin_type == "" or d.checkin_type == "Lunch Out"):
+		if d.checkin_type == "Lunch Out" or (c_time >= lunch_out_from and c_time <= lunch_out_to and not key_data[key].get("lunch_out") and (d.checkin_type == None or d.checkin_type == "")):
 			key_data[key]["lunch_out_name"] = d.c_name
 			key_data[key]["lunch_out"] = d.c_time
 		
-		if c_time >= lunch_in_from and c_time <= lunch_in_to and not key_data[key].get("lunch_in") and (d.checkin_type == None or d.checkin_type == "" or d.checkin_type == "Lunch In"):
+		if d.checkin_type == "Lunch In" or (c_time >= lunch_in_from and c_time <= lunch_in_to and not key_data[key].get("lunch_in") and (d.checkin_type == None or d.checkin_type == "")):
 			key_data[key]["lunch_in_name"] = d.c_name
 			key_data[key]["lunch_in"] = d.c_time
 		
-		if c_time >= evening_duty_out_from and c_time <= evening_duty_out_to and not key_data[key].get("duty_out") and (d.checkin_type == None or d.checkin_type == "" or d.checkin_type == "Duty Out"):
+		if  d.checkin_type == "Duty Out" or (c_time >= evening_duty_out_from and c_time <= evening_duty_out_to and not key_data[key].get("duty_out") and (d.checkin_type == None or d.checkin_type == "")):
 			key_data[key]["duty_out_name"] = d.c_name
 			key_data[key]["duty_out"] = d.c_time
 		

@@ -93,7 +93,6 @@ def get_result_as_list(data, filters):
 		settings[shift]["max_morning_float"] = time_diff(settings[shift]["lunch_out"], settings[shift]["morning_duty_in"]).seconds/(60*60)
 		settings[shift]["max_evening_float"] = time_diff(settings[shift]["evening_duty_out"], settings[shift]["lunch_in"]).seconds/(60*60)
 		settings[shift]["max_day_float"] = settings[shift]["max_morning_float"] + settings[shift]["max_evening_float"]
-		
 
 		settings[shift]["morning_duty_in_late"] = settings[shift]["morning_duty_in"]
 		settings[shift]["lunch_in_late"] = settings[shift]["lunch_in"] + to_timedelta("00:00:30")
@@ -373,14 +372,7 @@ def get_result_as_list(data, filters):
 						key_data[key]["break_2"] = time_diff(key_data[key].get("break_in_2"), key_data[key].get("break_out_2"))
 
 					if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):	
-
-						key_data[key]["evening_from"] = key_data[key]["lunch_in"]
-						if key_data[key]["evening_from"] <= lunch_in:
-							key_data[key]["evening_from"] = lunch_in
-
-						key_data[key]["evening_to"] = key_data[key]["duty_out"]
-
-						key_data[key]["evening"] = time_diff(key_data[key].get("evening_to"), key_data[key].get("evening_from"))
+						key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))
 
 					if key_data[key].get("duty_in") and not key_data[key].get("lunch_out"):
 						key_data[key]["error"] = "@"
@@ -415,6 +407,9 @@ def get_result_as_list(data, filters):
 					key_data[key]["breaks_float"] = 0					
 					key_data[key]["evening_float"] = 0
 					key_data[key]["ot_hours_float"] = 0
+					key_data[key]["ot_morning_float"] = 0
+					key_data[key]["ot_evening_float"] = 0
+					key_data[key]["normal_hours_float"] = 0
 
 					if key_data[key].get("break_1") != 0:
 						key_data[key]["break_1_float"] = key_data[key].get("break_1").seconds/(60*60)
@@ -426,25 +421,26 @@ def get_result_as_list(data, filters):
 
 					if key_data[key].get("morning") != 0:
 						key_data[key]["morning_float"] = key_data[key].get("morning").seconds/(60*60) - key_data[key]["break_1_float"]
-						# if key_data[key]["morning_float"] > max_morning_float:
-						# 	key_data[key]["morning_float"] = max_morning_float
-						# key_data[key]["morning_float"] = round_time_up(key_data[key]["morning_float"])
 
+						if key_data[key]["morning_float"] > max_morning_float:
+							key_data[key]["ot_morning_float"] = key_data[key]["morning_float"] - max_morning_float
+							key_data[key]["morning_float"] = max_morning_float
 					
 					if key_data[key].get("lunch") != 0:
 						key_data[key]["lunch_float"] = key_data[key].get("lunch").seconds/(60*60)					
 					
 					if key_data[key].get("evening") != 0:
 						key_data[key]["evening_float"] = key_data[key].get("evening").seconds/(60*60) - key_data[key]["break_2_float"]
-						# if key_data[key]["evening_float"] > max_evening_float:
-						# 	key_data[key]["evening_float"] = max_evening_float
-						# key_data[key]["evening_float"] = round_time_up(key_data[key]["evening_float"])
-					
-					key_data[key]["total_hours_float"] = key_data[key]["morning_float"] + key_data[key]["evening_float"]
 
-					if key_data[key].get("morning") and key_data[key].get("evening"):
-						if key_data[key]["total_hours_float"] -  max_day_float > 0:
-							key_data[key]["ot_hours_float"] = key_data[key]["total_hours_float"] -  max_day_float
+						if key_data[key]["evening_float"] > max_evening_float:
+							key_data[key]["ot_evening_float"] = key_data[key]["evening_float"] - max_evening_float
+							key_data[key]["evening_float"] = max_evening_float
+					
+					key_data[key]["ot_hours_float"] = key_data[key]["ot_morning_float"] + key_data[key]["ot_evening_float"]
+					key_data[key]["normal_hours_float"] = key_data[key]["morning_float"] + key_data[key]["evening_float"]
+					
+					key_data[key]["total_hours_float"] = key_data[key]["normal_hours_float"] + key_data[key]["ot_hours_float"]
+
 					
 					key_data[key]["all_checkin"] = " || ".join(key_data[key]["all_checkin"])
 					key_data[key]["morning"] = key_data[key].get("morning") or ""
@@ -629,6 +625,13 @@ def get_columns():
 			"label": _("Full Duty"),
 			"precision": 1,
 			"fieldtype": "Float",
+			"width": 80
+		},
+		{
+			"fieldname": "normal_hours_float",
+			"label": _("Normal Hours"),
+			"fieldtype": "Float",
+			"precision": 2,
 			"width": 80
 		},
 		{

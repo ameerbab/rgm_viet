@@ -45,6 +45,46 @@ def get_result_as_list(data, filters):
 			settings_shift = settings_weekday
 		else:
 			settings_shift = settings_weekend
+		
+		# if not settings_shift.morning_duty_in_enable:
+		# 	settings_shift.morning_duty_in = "00:00:01"
+		# 	settings_shift.morning_duty_in_from = "00:00:01"
+		# 	settings_shift.morning_duty_in_to = "00:00:02"
+		# 	settings_shift.morning_duty_in_round_from = "00:00:01"
+		# 	settings_shift.morning_duty_in_round_to = "00:00:02"
+		# 	settings_shift.morning_duty_in_display = "00:00:01"
+		# 	settings_shift.morning_duty_in_display_from = "00:00:01"
+		# 	settings_shift.morning_duty_in_display_to = "00:00:02"
+		
+		# if not settings_shift.lunch_out_enable:
+		# 	settings_shift.lunch_out = "11:45:00"
+		# 	settings_shift.lunch_out_from = "00:00:01"
+		# 	settings_shift.lunch_out_to = "00:00:02"
+		# 	settings_shift.lunch_out_round_from = "00:00:01"
+		# 	settings_shift.lunch_out_round_to = "00:00:02"
+		# 	settings_shift.lunch_out_display = "00:00:01"
+		# 	settings_shift.lunch_out_display_from = "00:00:01"
+		# 	settings_shift.lunch_out_display_to = "00:00:02"
+		
+		# if not settings_shift.lunch_in_enable:
+		# 	settings_shift.lunch_in = "12:30:00"
+		# 	settings_shift.lunch_in_from = "00:00:01"
+		# 	settings_shift.lunch_in_to = "00:00:02"
+		# 	settings_shift.lunch_in_round_from = "00:00:01"
+		# 	settings_shift.lunch_in_round_to = "00:00:02"
+		# 	settings_shift.lunch_in_display = "00:00:01"
+		# 	settings_shift.lunch_in_display_from = "00:00:01"
+		# 	settings_shift.lunch_in_display_to = "00:00:02"
+		
+		# if not settings_shift.evening_duty_out_enable:
+		# 	settings_shift.evening_duty_out = "23:00:04"
+		# 	settings_shift.evening_duty_out_from = "00:00:01"
+		# 	settings_shift.evening_duty_out_to = "00:00:02"
+		# 	settings_shift.evening_duty_out_round_from = "00:00:01"
+		# 	settings_shift.evening_duty_out_round_to = "00:00:02"
+		# 	settings_shift.evening_duty_out_display = "00:00:01"
+		# 	settings_shift.evening_duty_out_display_from = "00:00:01"
+		# 	settings_shift.evening_duty_out_display_to = "00:00:02"
 
 		settings[shift]["morning_duty_in"] = to_timedelta(settings_shift.morning_duty_in)
 
@@ -95,9 +135,16 @@ def get_result_as_list(data, filters):
 		settings[shift]["max_day_float"] = settings[shift]["max_morning_float"] + settings[shift]["max_evening_float"]
 
 		settings[shift]["morning_duty_in_late"] = settings[shift]["morning_duty_in"]
-		settings[shift]["lunch_in_late"] = settings[shift]["lunch_in"] + to_timedelta("00:00:30")
+		
+		if settings[shift]["lunch_in"]:
+			settings[shift]["lunch_in_late"] = settings[shift]["lunch_in"] + to_timedelta("00:00:30")
+		else:
+			settings[shift]["lunch_in_late"] = to_timedelta("00:00:30")
+			
 		settings[shift]["lunch_out_early"] = settings[shift]["lunch_out"]
 		settings[shift]["evening_duty_out_early"] = settings[shift]["evening_duty_out"]
+
+		settings[shift]["ot_from"] = to_timedelta(settings_shift.ot_from)
 
 
 
@@ -166,6 +213,8 @@ def get_result_as_list(data, filters):
 		lunch_in_late = settings[shift]["lunch_in_late"]
 		lunch_out_early = settings[shift]["lunch_out_early"]
 		evening_duty_out_early = settings[shift]["evening_duty_out_early"]
+
+		ot_from = settings[shift]["ot_from"]
 		
 
 		if not key_data.get(key):
@@ -297,6 +346,8 @@ def get_result_as_list(data, filters):
 				lunch_out_early = settings[shift]["lunch_out_early"]
 				evening_duty_out_early = settings[shift]["evening_duty_out_early"]
 
+				ot_from = settings[shift]["ot_from"]
+
 				
 				key_data[key]["morning"] = 0
 				key_data[key]["lunch"] = 0
@@ -304,6 +355,7 @@ def get_result_as_list(data, filters):
 				key_data[key]["break_2"] = 0
 				key_data[key]["evening"] = 0
 				key_data[key]["full_duty"] = 0
+				key_data[key]["ot_evening"] = 0
 				key_data[key]["ot_hours"] = 0
 
 				key_data[key]["late_in"] = ""
@@ -371,8 +423,12 @@ def get_result_as_list(data, filters):
 					if key_data[key].get("break_out_2") and key_data[key].get("break_in_2"):
 						key_data[key]["break_2"] = time_diff(key_data[key].get("break_in_2"), key_data[key].get("break_out_2"))
 
-					if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):	
-						key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))
+					if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):
+						if key_data[key].get("duty_out") > ot_from:
+							key_data[key]["evening"] = time_diff(ot_from, key_data[key].get("lunch_in"))
+							key_data[key]["ot_evening"] = time_diff(key_data[key].get("duty_out"), ot_from)
+						else:
+							key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))
 
 					if key_data[key].get("duty_in") and not key_data[key].get("lunch_out"):
 						key_data[key]["error"] = "@"
@@ -431,6 +487,9 @@ def get_result_as_list(data, filters):
 					
 					if key_data[key].get("evening") != 0:
 						key_data[key]["evening_float"] = key_data[key].get("evening").seconds/(60*60) - key_data[key]["break_2_float"]
+					
+					if key_data[key].get("ot_evening") != 0:
+						key_data[key]["ot_evening_float"] = key_data[key].get("ot_evening").seconds/(60*60)
 
 						if key_data[key]["evening_float"] > max_evening_float:
 							key_data[key]["ot_evening_float"] = key_data[key]["evening_float"] - max_evening_float

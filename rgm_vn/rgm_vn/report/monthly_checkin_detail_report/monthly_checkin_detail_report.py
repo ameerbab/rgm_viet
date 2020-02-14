@@ -291,20 +291,47 @@ def get_result_as_list(data, filters):
 				shift = "weekday"
 
 			morning_duty_in_from = settings[shift]["morning_duty_in_from"]
-			morning_duty_in_to = settings[shift]["morning_duty_in_to"]			
+			morning_duty_in_to = settings[shift]["morning_duty_in_to"]
+			evening_duty_out_from = settings[shift]["evening_duty_out_from"]
+			evening_duty_out_to = settings[shift]["evening_duty_out_to"]			
 
 			if key_data.get(key):
-				if key_data[key].get("duty_in") and not key_data[key].get("lunch_out"):
+				if key_data[key].get("duty_in") or not key_data[key].get("lunch_out"):
 					for c_time in key_data[key]["all_checkin_data"]:
 						d = key_data[key]["all_checkin_data"][c_time]
 						c_time = to_timedelta(c_time)
+
 						if c_time >= morning_duty_in_from and c_time <= morning_duty_in_to:
 							if not key_data[key].get("lunch_out"):
 								key_data[key]["lunch_out_name"] = d.c_name
 								key_data[key]["lunch_out"] = d.c_time
-							elif c_time > key_data[key].get("lunch_out"):
+
+							if c_time < key_data[key].get("duty_in"):
+								key_data[key]["duty_in_name"] = d.c_name
+								key_data[key]["duty_in"] = d.c_time
+
+							if c_time > key_data[key].get("lunch_out"):
 								key_data[key]["lunch_out_name"] = d.c_name
 								key_data[key]["lunch_out"] = d.c_time
+
+				if key_data[key].get("duty_out") or not key_data[key].get("lunch_in"):
+					for c_time in key_data[key]["all_checkin_data"]:
+						d = key_data[key]["all_checkin_data"][c_time]
+						c_time = to_timedelta(c_time)
+
+						if c_time >= evening_duty_out_from and c_time <= evening_duty_out_to:
+							if not key_data[key].get("lunch_in"):
+								key_data[key]["lunch_in_name"] = d.c_name
+								key_data[key]["lunch_in"] = d.c_time
+							
+							if c_time > key_data[key].get("duty_out"):
+								key_data[key]["duty_out_name"] = d.c_name
+								key_data[key]["duty_out"] = d.c_time
+							
+							if c_time < key_data[key].get("lunch_in"):
+								key_data[key]["lunch_in_name"] = d.c_name
+								key_data[key]["lunch_in"] = d.c_time
+
 					# frappe.errprint(key_data[key]["all_checkin"])
 
 	for employee in employees:

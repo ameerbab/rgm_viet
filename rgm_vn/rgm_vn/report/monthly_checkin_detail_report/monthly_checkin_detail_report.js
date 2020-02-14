@@ -32,6 +32,13 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 			"options": ["", "Late In", "Early Out", "Late or Early"],
 		},
 		{
+			"fieldname":"error",
+			"label": __("Error"),
+			"fieldtype": "Select",
+			"options": ["", "@", "Missing Punches"],
+			// "default":"@"
+		},
+		{
 			"fieldname":"company",
 			"label": __("Company"),
 			"fieldtype": "Link",

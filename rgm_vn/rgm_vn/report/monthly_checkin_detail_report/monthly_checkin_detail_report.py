@@ -237,6 +237,11 @@ def get_result_as_list(data, filters):
 		
 		c_time = to_timedelta(d.c_time)
 
+		if not key_data[key].get("all_checkin_data"):
+			key_data[key]["all_checkin_data"] = {}
+		
+		key_data[key]["all_checkin_data"][cstr(d.c_time)] = d
+
 		if not key_data[key].get("all_checkin"):
 			key_data[key]["all_checkin"] = []
 
@@ -273,6 +278,34 @@ def get_result_as_list(data, filters):
 		if d.checkin_type == "Break In 2":
 			key_data[key]["break_in_2_name"] = d.c_name
 			key_data[key]["break_in_2"] = d.c_time
+	
+	#check case have only 2 punch
+	for employee in employees:
+		for c_date in dates:
+			key = (employee, c_date)
+
+			c_day =  c_date.strftime("%a")
+			if c_day == "Sat" or c_day == "Sun":
+				shift = "weekend"
+			else:
+				shift = "weekday"
+
+			morning_duty_in_from = settings[shift]["morning_duty_in_from"]
+			morning_duty_in_to = settings[shift]["morning_duty_in_to"]			
+
+			if key_data.get(key):
+				if key_data[key].get("duty_in") and not key_data[key].get("lunch_out"):
+					for c_time in key_data[key]["all_checkin_data"]:
+						d = key_data[key]["all_checkin_data"][c_time]
+						c_time = to_timedelta(c_time)
+						if c_time >= morning_duty_in_from and c_time <= morning_duty_in_to:
+							if not key_data[key].get("lunch_out"):
+								key_data[key]["lunch_out_name"] = d.c_name
+								key_data[key]["lunch_out"] = d.c_time
+							elif c_time > key_data[key].get("lunch_out"):
+								key_data[key]["lunch_out_name"] = d.c_name
+								key_data[key]["lunch_out"] = d.c_time
+					# frappe.errprint(key_data[key]["all_checkin"])
 
 	for employee in employees:
 		for c_date in dates:
@@ -360,6 +393,7 @@ def get_result_as_list(data, filters):
 
 				key_data[key]["late_in"] = ""
 				key_data[key]["early_out"] = ""
+				key_data[key]["error"] = ""
 
 				if key_data[key].get("duty_in"):
 					if key_data[key].get("duty_in") > morning_duty_in_late:
@@ -537,9 +571,15 @@ def get_result_as_list(data, filters):
 					key_data[key]["break_out_2"] = key_data[key].get("break_out_2") or "--------"
 					key_data[key]["break_in_2"] = key_data[key].get("break_in_2") or "--------"
 
-					row = key_data[key]
+					row = None
+					if filters.get("error"):
+						if key_data[key]["error"] == filters.get("error"):
+							row = key_data[key]
+					else:
+						row = key_data[key]
 
-					result.append(row)
+					if row:
+						result.append(row)
 
 	return result
 

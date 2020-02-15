@@ -259,7 +259,7 @@ def get_result_as_list(data, filters):
 			key_data[key]["lunch_in_name"] = d.c_name
 			key_data[key]["lunch_in"] = d.c_time
 		
-		if  d.checkin_type == "Duty Out" or (c_time >= evening_duty_out_from and c_time <= evening_duty_out_to and not key_data[key].get("duty_out") and (d.checkin_type == None or d.checkin_type == "")):
+		if  d.checkin_type == "Duty Out" or (c_time >= evening_duty_out_from and c_time <= evening_duty_out_to and (d.checkin_type == None or d.checkin_type == "")):
 			key_data[key]["duty_out_name"] = d.c_name
 			key_data[key]["duty_out"] = d.c_time
 		
@@ -293,7 +293,9 @@ def get_result_as_list(data, filters):
 			morning_duty_in_from = settings[shift]["morning_duty_in_from"]
 			morning_duty_in_to = settings[shift]["morning_duty_in_to"]
 			evening_duty_out_from = settings[shift]["evening_duty_out_from"]
-			evening_duty_out_to = settings[shift]["evening_duty_out_to"]			
+			evening_duty_out_to = settings[shift]["evening_duty_out_to"]
+			lunch_out = settings[shift]["lunch_out"]
+			lunch_in = settings[shift]["lunch_in"]			
 
 			if key_data.get(key):
 				if key_data[key].get("duty_in") or not key_data[key].get("lunch_out"):
@@ -302,15 +304,11 @@ def get_result_as_list(data, filters):
 						c_time = to_timedelta(c_time)
 
 						if c_time >= morning_duty_in_from and c_time <= morning_duty_in_to:
-							if not key_data[key].get("lunch_out"):
+							if not key_data[key].get("lunch_out") and d.c_name != key_data[key]["duty_in_name"] and (d.checkin_type == None or d.checkin_type == ""):
 								key_data[key]["lunch_out_name"] = d.c_name
 								key_data[key]["lunch_out"] = d.c_time
 
-							if c_time < key_data[key].get("duty_in"):
-								key_data[key]["duty_in_name"] = d.c_name
-								key_data[key]["duty_in"] = d.c_time
-
-							if c_time > key_data[key].get("lunch_out"):
+							if key_data[key].get("lunch_out") and c_time > key_data[key].get("lunch_out") and d.c_name != key_data[key]["duty_in_name"] and (d.checkin_type == None or d.checkin_type == ""):
 								key_data[key]["lunch_out_name"] = d.c_name
 								key_data[key]["lunch_out"] = d.c_time
 
@@ -320,17 +318,71 @@ def get_result_as_list(data, filters):
 						c_time = to_timedelta(c_time)
 
 						if c_time >= evening_duty_out_from and c_time <= evening_duty_out_to:
-							if not key_data[key].get("lunch_in"):
+							if not key_data[key].get("lunch_in") and d.c_name != key_data[key]["duty_out_name"]  and (d.checkin_type == None or d.checkin_type == ""):
 								key_data[key]["lunch_in_name"] = d.c_name
 								key_data[key]["lunch_in"] = d.c_time
 							
-							if c_time > key_data[key].get("duty_out"):
-								key_data[key]["duty_out_name"] = d.c_name
-								key_data[key]["duty_out"] = d.c_time
-							
-							if c_time < key_data[key].get("lunch_in"):
+							if key_data[key].get("lunch_in") and c_time < key_data[key].get("lunch_in") and d.c_name != key_data[key]["duty_out_name"]  and (d.checkin_type == None or d.checkin_type == ""):
 								key_data[key]["lunch_in_name"] = d.c_name
 								key_data[key]["lunch_in"] = d.c_time
+				
+				if key_data[key].get("duty_in") and key_data[key].get("duty_out") and not key_data[key].get("lunch_out") and not key_data[key].get("lunch_in"):
+					key_data[key]["lunch_out"] = lunch_out
+					key_data[key]["lunch_in"] = lunch_in
+				
+				len_checkin_duty_in = 0
+				len_checkin_duty_out = 0
+				for c_time in key_data[key]["all_checkin_data"]:
+					c_time = to_timedelta(c_time)
+					if c_time >= morning_duty_in_from and c_time <= morning_duty_in_to:
+						len_checkin_duty_in += 1
+					if c_time >= evening_duty_out_from and c_time <= evening_duty_out_to:
+						len_checkin_duty_out += 1
+				
+				if len_checkin_duty_in == 3 and key_data[key].get("duty_in"):
+					for c_time in key_data[key]["all_checkin_data"]:
+						d = key_data[key]["all_checkin_data"][c_time]
+						c_time = to_timedelta(c_time)
+						if c_time >= morning_duty_in_from and c_time <= morning_duty_in_to:
+							if not key_data[key].get("break_out_1") and d.c_name != key_data[key]["duty_in_name"] and (d.checkin_type == None or d.checkin_type == ""):
+								key_data[key]["break_out_1_name"] = d.c_name
+								key_data[key]["break_out_1"] = d.c_time
+
+							if key_data[key].get("break_out_1") and c_time < key_data[key].get("break_out_1") and d.c_name != key_data[key]["duty_in_name"]  and (d.checkin_type == None or d.checkin_type == ""):
+								key_data[key]["break_out_1_name"] = d.c_name
+								key_data[key]["break_out_1"] = d.c_time
+							
+							if not key_data[key].get("break_in_1") and d.c_name != key_data[key]["duty_in_name"] and (d.checkin_type == None or d.checkin_type == ""):
+								key_data[key]["break_in_1_name"] = d.c_name
+								key_data[key]["break_in_1"] = d.c_time
+
+							if key_data[key].get("break_in_1") and c_time > key_data[key].get("break_in_1") and d.c_name != key_data[key]["duty_in_name"]  and (d.checkin_type == None or d.checkin_type == ""):
+								key_data[key]["break_in_1_name"] = d.c_name
+								key_data[key]["break_in_1"] = d.c_time
+				
+				if len_checkin_duty_out == 3 and key_data[key].get("duty_out"):
+					for c_time in key_data[key]["all_checkin_data"]:
+						d = key_data[key]["all_checkin_data"][c_time]
+						c_time = to_timedelta(c_time)
+						if c_time >= evening_duty_out_from and c_time <= evening_duty_out_to:
+							if not key_data[key].get("break_out_2") and d.c_name != key_data[key]["duty_out_name"] and (d.checkin_type == None or d.checkin_type == ""):
+								key_data[key]["break_out_2_name"] = d.c_name
+								key_data[key]["break_out_2"] = d.c_time
+
+							if key_data[key].get("break_out_2") and c_time < key_data[key].get("break_out_2") and d.c_name != key_data[key]["duty_out_name"]  and (d.checkin_type == None or d.checkin_type == ""):
+								key_data[key]["break_out_2_name"] = d.c_name
+								key_data[key]["break_out_2"] = d.c_time
+							
+							if not key_data[key].get("break_in_2") and d.c_name != key_data[key]["duty_out_name"] and (d.checkin_type == None or d.checkin_type == ""):
+								key_data[key]["break_in_2_name"] = d.c_name
+								key_data[key]["break_in_2"] = d.c_time
+
+							if key_data[key].get("break_in_2") and c_time > key_data[key].get("break_in_2") and d.c_name != key_data[key]["duty_out_name"]  and (d.checkin_type == None or d.checkin_type == ""):
+								key_data[key]["break_in_2_name"] = d.c_name
+								key_data[key]["break_in_2"] = d.c_time
+
+
+
 
 					# frappe.errprint(key_data[key]["all_checkin"])
 
@@ -486,7 +538,8 @@ def get_result_as_list(data, filters):
 
 					if key_data[key].get("duty_out") and key_data[key].get("lunch_in"):
 						if key_data[key].get("duty_out") > ot_from:
-							key_data[key]["evening"] = time_diff(ot_from, key_data[key].get("lunch_in"))
+							if ot_from > key_data[key].get("lunch_in"):
+								key_data[key]["evening"] = time_diff(ot_from, key_data[key].get("lunch_in"))
 							key_data[key]["ot_evening"] = time_diff(key_data[key].get("duty_out"), ot_from)
 						else:
 							key_data[key]["evening"] = time_diff(key_data[key].get("duty_out"), key_data[key].get("lunch_in"))

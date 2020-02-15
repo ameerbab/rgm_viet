@@ -45,6 +45,13 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 			"options": "Company",
 			"default": frappe.defaults.get_user_default("Company"),
 			"reqd": 1
+		},
+		{
+			"fieldname":"auto_refresh",
+			"label": __("Auto Refresh"),
+			"fieldtype": "Check",
+			"default": 0,
+			"change": function() {}
 		}
 	],
 	"formatter": function(value, row, column, data, default_formatter) {
@@ -173,9 +180,12 @@ frappe.query_reports["Monthly Checkin Detail Report"] = {
 				time_only: me.data.c_time,
 				checkin_type: me.data.checkin_type,
 			}).then(() => {
-				frappe.query_report.refresh();
-			})
-			
+				if (frappe.query_report.get_filter_value("auto_refresh")){
+					frappe.query_report.refresh();
+				}else{
+					frappe.msgprint(__("Checkin created successfully.<br>You need to refresh to see new update"));
+				}			
+			})			
 		});
 		me.check_in.show();
 		return false;

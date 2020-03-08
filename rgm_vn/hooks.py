@@ -4,11 +4,11 @@ from . import __version__ as app_version
 
 app_name = "rgm_vn"
 app_title = "RGM VN"
-app_publisher = "vinhnguyen.t090@gmail.com"
+app_publisher = "emails@iwex.in"
 app_description = "RGM VN"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
-app_email = "vinhnguyen.t090@gmail.com"
+app_email = "emails@iwex.in"
 app_license = "MIT"
 
 # Includes in <head>
